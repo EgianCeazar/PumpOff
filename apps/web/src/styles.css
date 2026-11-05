@@ -123,8 +123,6 @@ summary { cursor: pointer; color: var(--muted); font-weight: 700; }
 
 /* ---------------- chart ---------------- */
 .chart { margin: 0; }
-.legend { display: flex; gap: 14px; margin-bottom: 6px; color: var(--muted); font-size: .85rem; }
-.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; }
 .chart-wrap { position: relative; }
 .chart svg { display: block; width: 100%; height: auto; }
 .chart .grid { stroke: #273249; stroke-width: 1; }
@@ -142,4 +140,17 @@ summary { cursor: pointer; color: var(--muted); font-weight: 700; }
   .tiles .tile:last-child { grid-column: 1 / -1; }
   .bests { grid-template-columns: 1fr; }
   .tile strong { font-size: 1.6rem; }
+}
+
+/* ---------------- exercise pickers ---------------- */
+.segmented { display: flex; flex-wrap: wrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chips button { padding: 6px 12px; border-radius: 999px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); font-size: .85rem; }
+.chips button.active { background: #222c40; color: var(--text); border-color: #3a4a66; }
+.chart-title { margin: 0 0 6px; color: var(--muted); font-size: .85rem; }
+
+/* Keep the top tabs on one line on narrow phones. */
+@media (max-width: 420px) {
+  .tabs { gap: 2px; padding: 10px 12px; }
+  .tabs button { padding: 8px 10px; }
 }

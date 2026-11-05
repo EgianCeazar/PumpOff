@@ -81,7 +81,7 @@ test('sessionSummary totals reps per exercise and form quality', () => {
   const summary = sessionSummary(log.sessions[0]);
   assert.equal(summary.reps, 24);
   assert.equal(summary.sets, 3);
-  assert.deepEqual(summary.byExercise.squat, { reps: 18, sets: 2, notCounted: 2 });
+  assert.deepEqual(summary.byExercise.squat, { reps: 18, sets: 2, notCounted: 2, holdMs: 0 });
   assert.equal(summary.cleanRate, 24 / 26);
   assert.equal(summary.durationMs, 10 * MIN);
 });
@@ -109,6 +109,18 @@ test('newBests says which records a new set beats', () => {
 test('the open workout counts toward personal bests', () => {
   const log = logSet(emptyLog(), set('pushup', 9, at(2026, 11, 5)));
   assert.equal(personalBests(log).pushup.anySet.reps, 9);
+});
+
+test('plank holds have their own personal best and weekly time', () => {
+  const plank = (ms, endedAt) => makeSet({ exercise: 'plank', holdMs: ms, startedAt: endedAt - ms, endedAt });
+  const log = logWith([plank(45000, at(2026, 11, 3)), plank(62000, at(2026, 11, 3, 19))], [plank(50000, at(2026, 11, 5))]);
+  assert.equal(personalBests(log).plank.longestHold.ms, 62000);
+  assert.deepEqual(newBests(log, plank(63000, at(2026, 11, 6))), ['longestHold']);
+  assert.deepEqual(newBests(log, plank(30000, at(2026, 11, 6))), []);
+  const week = weeklyReps(log, at(2026, 11, 5), 1)[0];
+  assert.equal(week.holdMs.plank, 157000);
+  assert.equal(week.reps.plank, undefined);
+  assert.equal(sessionSummary(log.sessions[1]).byExercise.plank.holdMs, 107000);
 });
 
 /* ---------------------------- progress over time ---------------------------- */

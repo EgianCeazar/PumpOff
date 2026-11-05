@@ -25,7 +25,16 @@ export function formatPercent(rate) {
   return rate === null || rate === undefined ? '–' : `${Math.round(rate * 100)}%`;
 }
 
+// A hold time as m:ss, e.g. 1:05.
+export function formatHold(ms = 0) {
+  const total = Math.floor(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 export function describeSet(set) {
+  if (set.holdMs !== null && set.holdMs !== undefined) {
+    return `${exerciseName(set.exercise)} · ${formatHold(set.holdMs)} hold`;
+  }
   const kind = set.mode === 'timed' ? `${set.seconds}s set` : 'set';
   return `${exerciseName(set.exercise)} · ${kind} · ${set.reps} reps`;
 }

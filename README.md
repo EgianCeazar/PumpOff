@@ -17,7 +17,7 @@ PumpOff grew out of [FlexOff](https://github.com/EgianCeazar/Flex_Off), a bodybu
 ```text
 PumpOff/
 ├── packages/
-│   └── core/          # Shared rep counting, workout log and stats (web, Android, server)
+│   └── core/          # Shared rep counting, plank timing, workout log and stats (web, Android, server)
 └── apps/
     ├── web/           # Web app: workout, history, progress
     └── mobile/        # Android app with Expo + React Native (planned)
@@ -36,7 +36,7 @@ PumpOff/
 
 ## Roadmap
 
-1. **Web rep counter prototype**: push-ups and squats, tuned with recorded sets. *(built, needs tuning with real sets)*
+1. **Web rep counter prototype**: push-ups, squats, lunges, sit-ups and plank, tuned with recorded sets. *(built, needs tuning with real sets)*
 2. **Solo tracking**: workouts saved offline on the device, history, personal bests, weekly reps, streaks, form feedback, backup. *(built)*
 3. **Android MVP**: one exercise, friend battle by invite link with live video, result screen, sign-in.
 4. **Leaderboards**: match history, friends and weekly boards.

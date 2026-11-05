@@ -5,6 +5,7 @@ import {
   exerciseName,
   formatDay,
   formatDuration,
+  formatHold,
   formatPercent,
   formatTime,
 } from './format.js';
@@ -49,7 +50,7 @@ export default function HistoryScreen({ log, onDeleteSession }) {
             <div className="totals">
               {Object.entries(summary.byExercise).map(([key, entry]) => (
                 <div key={key}>
-                  <strong>{entry.reps}</strong>
+                  <strong>{entry.holdMs > 0 ? formatHold(entry.holdMs) : entry.reps}</strong>
                   <span>
                     {exerciseName(key)} · {entry.sets} {entry.sets === 1 ? 'set' : 'sets'}
                   </span>

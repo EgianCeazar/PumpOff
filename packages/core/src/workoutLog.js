@@ -22,11 +22,21 @@ export function createSession(now) {
 }
 
 /*
- * A set from a rep counter result.
+ * A set from a tracker result.
  *   mode: 'free' (count until you stop) or 'timed' (fixed seconds)
  *   rejected: the counter's rejected attempts ({ reason } each)
+ *   holdMs: for holds like plank, the time held in good form
  */
-export function makeSet({ exercise, reps, rejected = [], startedAt, endedAt, mode = 'free', seconds = null }) {
+export function makeSet({
+  exercise,
+  reps = 0,
+  rejected = [],
+  startedAt,
+  endedAt,
+  mode = 'free',
+  seconds = null,
+  holdMs = null,
+}) {
   const notCountedReasons = {};
   for (const attempt of rejected) {
     notCountedReasons[attempt.reason] = (notCountedReasons[attempt.reason] ?? 0) + 1;
@@ -37,6 +47,7 @@ export function makeSet({ exercise, reps, rejected = [], startedAt, endedAt, mod
     mode,
     seconds: mode === 'timed' ? seconds : null,
     reps,
+    holdMs: holdMs === null ? null : Math.round(holdMs),
     notCounted: rejected.length,
     notCountedReasons,
     startedAt,
@@ -79,10 +90,11 @@ export function sessionSummary(session) {
   let reps = 0;
   let notCounted = 0;
   for (const set of session.sets) {
-    const entry = (byExercise[set.exercise] ??= { reps: 0, sets: 0, notCounted: 0 });
+    const entry = (byExercise[set.exercise] ??= { reps: 0, sets: 0, notCounted: 0, holdMs: 0 });
     entry.reps += set.reps;
     entry.sets += 1;
     entry.notCounted += set.notCounted;
+    entry.holdMs += set.holdMs ?? 0;
     reps += set.reps;
     notCounted += set.notCounted;
   }
@@ -119,12 +131,15 @@ function allSets(log) {
   return sessions.flatMap(session => session.sets);
 }
 
-// Personal bests per exercise: the most reps in any set, and the most
-// reps in each timed length (e.g. 60 seconds).
+// Personal bests per exercise: the most reps in any set, the most reps
+// in each timed length (e.g. 60 seconds), and for holds the longest hold.
 export function personalBests(log) {
   const result = {};
   for (const set of allSets(log)) {
-    const entry = (result[set.exercise] ??= { anySet: null, timed: {} });
+    const entry = (result[set.exercise] ??= { anySet: null, timed: {}, longestHold: null });
+    if (set.holdMs > 0 && (!entry.longestHold || set.holdMs > entry.longestHold.ms)) {
+      entry.longestHold = { ms: set.holdMs, at: set.endedAt, setId: set.id };
+    }
     if (set.reps > 0 && (!entry.anySet || set.reps > entry.anySet.reps)) {
       entry.anySet = { reps: set.reps, at: set.endedAt, setId: set.id };
     }
@@ -141,8 +156,11 @@ export function personalBests(log) {
 // Which personal bests a new set would beat, given the log before it.
 // Used to celebrate a new best the moment a set is saved.
 export function newBests(logBefore, set) {
-  if (set.reps <= 0) return [];
   const bests = personalBests(logBefore)[set.exercise];
+  if (set.holdMs > 0) {
+    return !bests?.longestHold || set.holdMs > bests.longestHold.ms ? ['longestHold'] : [];
+  }
+  if (set.reps <= 0) return [];
   const beaten = [];
   if (!bests?.anySet || set.reps > bests.anySet.reps) beaten.push('anySet');
   if (set.mode === 'timed' && set.seconds) {
@@ -152,19 +170,24 @@ export function newBests(logBefore, set) {
   return beaten;
 }
 
-// Reps per exercise for each of the last `weeks` weeks, oldest first.
+// Reps (and, for holds, hold time) per exercise for each of the last
+// `weeks` weeks, oldest first.
 export function weeklyReps(log, now, weeks = 8) {
   const thisWeek = weekStart(now);
   const starts = Array.from({ length: weeks }, (_, i) => {
     const d = new Date(thisWeek);
     return new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7 * (weeks - 1 - i)).getTime();
   });
-  const rows = starts.map(start => ({ weekStart: start, reps: {} }));
+  const rows = starts.map(start => ({ weekStart: start, reps: {}, holdMs: {} }));
   for (const set of allSets(log)) {
     const index = starts.indexOf(weekStart(set.endedAt));
     if (index === -1) continue;
-    const reps = rows.at(index).reps;
-    reps[set.exercise] = (reps[set.exercise] ?? 0) + set.reps;
+    const row = rows.at(index);
+    if (set.holdMs > 0) {
+      row.holdMs[set.exercise] = (row.holdMs[set.exercise] ?? 0) + set.holdMs;
+    } else {
+      row.reps[set.exercise] = (row.reps[set.exercise] ?? 0) + set.reps;
+    }
   }
   return rows;
 }

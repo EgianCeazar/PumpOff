@@ -84,22 +84,9 @@ export const EXERCISES = {
     start: 135,
     bottom: 100,
     lowerCue: 'Go lower: bend your elbows to about 90°.',
-    plausible: (p, s) => {
-      const shoulder = p[s.shoulder];
-      const elbow = p[s.elbow];
-      const wrist = p[s.wrist];
-      const ankle = p[s.ankle];
-      const upperArm = distance(shoulder, elbow);
-      // A push-up body runs roughly horizontally across the frame.
-      const horizontal = Math.abs(shoulder.y - ankle.y) < Math.abs(shoulder.x - ankle.x);
-      // Hands are on the floor, below the shoulders (image y grows
-      // downward). A small allowance covers the bottom of a deep rep.
-      // Pushing the arms out while standing or sitting fails this.
-      const handsDown = wrist.y > shoulder.y - upperArm * 0.25;
-      return (
-        horizontal && handsDown && inProportion(upperArm, distance(elbow, wrist))
-      );
-    },
+    // Pushing the arms out while standing, sitting or lying on your back
+    // fails this: the body must be horizontal with hands on the floor.
+    plausible: (p, s) => isFloorPose(p, s),
     form: (p, s) => {
       const bodyLine = angleAt(p[s.shoulder], p[s.hip], p[s.ankle]);
       return bodyLine < 150
@@ -118,16 +105,7 @@ export const EXERCISES = {
     start: 145,
     bottom: 100,
     lowerCue: 'Go lower: aim for thighs about parallel to the floor.',
-    plausible: (p, s) => {
-      const shoulder = p[s.shoulder];
-      const hip = p[s.hip];
-      const knee = p[s.knee];
-      const ankle = p[s.ankle];
-      // Standing upright: shoulder above hip, hip and knee above the
-      // ankle. Image y grows downward.
-      const upright = shoulder.y < hip.y && hip.y < ankle.y && knee.y < ankle.y;
-      return upright && inProportion(distance(hip, knee), distance(knee, ankle));
-    },
+    plausible: (p, s) => isUpright(p, s),
     form: (p, s, start) => {
       // Lifting a foot (a knee raise or march) bends the knee like a
       // squat does, but the ankle leaves the floor.
@@ -145,7 +123,107 @@ export const EXERCISES = {
         : null;
     },
   },
+  lunge: {
+    key: 'lunge',
+    name: 'Lunges',
+    setup:
+      'Put the camera at hip height, side-on, about 2–3 m away. Alternate legs; every lunge counts, front leg or back.',
+    joints: ['shoulder', 'hip', 'knee', 'ankle'],
+    // The near-side knee bends to about 90° whether that leg is in front
+    // or behind, so every lunge registers.
+    angle: (p, s) => angleAt(p[s.hip], p[s.knee], p[s.ankle]),
+    top: 160,
+    start: 145,
+    bottom: 110,
+    lowerCue: 'Go lower: drop your back knee toward the floor.',
+    plausible: (p, s) => isUpright(p, s),
+    finish: (start, deepest, s) => {
+      // The hips drop in a lunge; a knee raise leaves them up.
+      const leg =
+        distance(start[s.hip], start[s.knee]) + distance(start[s.knee], start[s.ankle]);
+      return deepest[s.hip].y - start[s.hip].y < leg * 0.15
+        ? 'Drop your hips into the lunge, not just your knee.'
+        : null;
+    },
+  },
+  situp: {
+    key: 'situp',
+    name: 'Sit-ups',
+    setup:
+      'Put the camera on the floor, side-on, about 2 m away. Lie with knees bent and feet flat, then sit all the way up.',
+    joints: ['shoulder', 'hip', 'knee', 'ankle'],
+    // The hip angle (shoulder–hip–knee) is wide lying down and closes as
+    // you sit up, so "top" here is lying back and "bottom" is sitting up.
+    angle: (p, s) => angleAt(p[s.shoulder], p[s.hip], p[s.knee]),
+    top: 120,
+    start: 105,
+    bottom: 75,
+    lowerCue: 'Sit all the way up, chest toward your knees.',
+    plausible: (p, s) => {
+      const hip = p[s.hip];
+      const knee = p[s.knee];
+      const ankle = p[s.ankle];
+      const thigh = distance(hip, knee);
+      // On the floor: hips and feet at about the same height, knees bent up.
+      const onFloor = Math.abs(hip.y - ankle.y) < thigh * 0.6;
+      const kneesUp = knee.y < hip.y;
+      return onFloor && kneesUp && inProportion(thigh, distance(knee, ankle));
+    },
+    finish: (start, deepest, s) => {
+      // Shoulders must actually come up off the floor.
+      const torso = distance(start[s.shoulder], start[s.hip]);
+      return start[s.shoulder].y - deepest[s.shoulder].y < torso * 0.4
+        ? 'Lift your shoulders all the way off the floor.'
+        : null;
+    },
+  },
+  plank: {
+    key: 'plank',
+    name: 'Plank',
+    kind: 'hold',
+    setup:
+      'Put the camera on the floor, side-on, about 2 m away. Hold a straight line from shoulders to ankles, on hands or forearms.',
+    joints: ['shoulder', 'elbow', 'wrist', 'hip', 'ankle'],
+    plausible: (p, s) => isFloorPose(p, s),
+    // Null while the body is straight; otherwise what to fix. The timer
+    // only runs while this is null.
+    holdIssue: (p, s) => {
+      const shoulder = p[s.shoulder];
+      const hip = p[s.hip];
+      const ankle = p[s.ankle];
+      if (angleAt(shoulder, hip, ankle) >= 160) return null;
+      // Where the hip would be on a straight shoulder–ankle line.
+      const along = (hip.x - shoulder.x) / ((ankle.x - shoulder.x) || 1e-6);
+      const lineY = shoulder.y + along * (ankle.y - shoulder.y);
+      return hip.y > lineY ? 'Hips are sagging. Lift them in line.' : 'Hips are too high. Lower them in line.';
+    },
+  },
 };
+
+// Standing upright: shoulder above hip, hip and knee above the ankle,
+// legs in proportion. Image y grows downward.
+function isUpright(p, s) {
+  const shoulder = p[s.shoulder];
+  const hip = p[s.hip];
+  const knee = p[s.knee];
+  const ankle = p[s.ankle];
+  const upright = shoulder.y < hip.y && hip.y < ankle.y && knee.y < ankle.y;
+  return upright && inProportion(distance(hip, knee), distance(knee, ankle));
+}
+
+// A push-up or plank body: roughly horizontal, hands on the floor below
+// the shoulders, arms in proportion.
+function isFloorPose(p, s) {
+  const shoulder = p[s.shoulder];
+  const elbow = p[s.elbow];
+  const wrist = p[s.wrist];
+  const ankle = p[s.ankle];
+  const upperArm = distance(shoulder, elbow);
+  const horizontal = Math.abs(shoulder.y - ankle.y) < Math.abs(shoulder.x - ankle.x);
+  // A small allowance covers the bottom of a deep push-up.
+  const handsDown = wrist.y > shoulder.y - upperArm * 0.25;
+  return horizontal && handsDown && inProportion(upperArm, distance(elbow, wrist));
+}
 
 const DEFAULTS = {
   minVisibility: 0.5,
@@ -229,6 +307,7 @@ export function createRepCounter(exerciseKey, options = {}) {
   let armedSince = null;
   let lastRaw = null;
   let lastRawAt = null;
+  let restPose = null;
 
   function snapshot() {
     return {
@@ -256,6 +335,7 @@ export function createRepCounter(exerciseKey, options = {}) {
     armedSince = null;
     lastRaw = null;
     lastRawAt = null;
+    restPose = null;
   }
 
   // Back to waiting for a steady start position, dropping any rep in
@@ -265,6 +345,7 @@ export function createRepCounter(exerciseKey, options = {}) {
     phase = 'waiting';
     smoothed = null;
     armedSince = null;
+    restPose = null;
   }
 
   function finishAttempt(t, joints) {
@@ -341,6 +422,11 @@ export function createRepCounter(exerciseKey, options = {}) {
         : smoothed + (raw - smoothed) * settings.smoothing;
     const value = smoothed;
 
+    // The last pose fully at the start position. Checks like "did the
+    // hips drop" compare against this, not the frame a rep began on,
+    // which is already partway into the movement.
+    if (value >= exercise.top) restPose = landmarks;
+
     if (phase === 'waiting') {
       // Reps only count after holding the start position briefly.
       if (value >= exercise.top) {
@@ -359,7 +445,7 @@ export function createRepCounter(exerciseKey, options = {}) {
           startedAt: t,
           minAngle: value,
           formIssues: [],
-          start: landmarks,
+          start: restPose ?? landmarks,
           deepest: landmarks,
         };
       }
@@ -386,6 +472,130 @@ export function createRepCounter(exerciseKey, options = {}) {
   }
 
   return { exercise, update, reset, snapshot };
+}
+
+/* ---------------------------- holds (plank) ---------------------------- */
+
+/*
+ * Times a hold. The clock runs only while the exercise's `holdIssue`
+ * finds nothing wrong. A wobble shorter than `graceMs` keeps the time;
+ * a longer form break or leaving the frame pauses it, and holding good
+ * form again resumes it.
+ */
+export function createHoldTimer(exerciseKey, options = {}) {
+  const exercise = EXERCISES[exerciseKey];
+  if (!exercise || exercise.kind !== 'hold') {
+    throw new Error(`Not a hold exercise: ${exerciseKey}`);
+  }
+
+  const settings = { ...DEFAULTS, graceMs: 400, maxStepMs: 200, ...options };
+
+  let holdMs = 0;
+  let pendingMs = 0; // time during a wobble, kept only if form recovers
+  let holding = false;
+  let started = false;
+  let goodSince = null;
+  let badSince = null;
+  let lastT = null;
+  let tracking = false;
+  let side = null;
+  let issue = null;
+  let breaks = [];
+  let lastEvent = null;
+
+  function snapshot() {
+    return {
+      exercise: exercise.key,
+      kind: 'hold',
+      reps: 0,
+      rejected: [],
+      holdMs: Math.round(holdMs),
+      holding,
+      started,
+      issue,
+      breaks: [...breaks],
+      tracking,
+      side,
+      lastEvent,
+    };
+  }
+
+  function reset() {
+    holdMs = 0;
+    pendingMs = 0;
+    holding = false;
+    started = false;
+    goodSince = null;
+    badSince = null;
+    lastT = null;
+    tracking = false;
+    side = null;
+    issue = null;
+    breaks = [];
+    lastEvent = null;
+  }
+
+  function pause(reason, t) {
+    holding = false;
+    pendingMs = 0;
+    badSince = null;
+    const event = { type: 'break', reason, t };
+    breaks.push(event);
+    lastEvent = event;
+  }
+
+  function update(landmarks, t) {
+    lastEvent = null;
+    // Cap each step so a dropped camera frame can't add a big jump.
+    const step = lastT === null ? 0 : Math.min(Math.max(t - lastT, 0), settings.maxStepMs);
+    lastT = t;
+
+    const picked = landmarks ? pickSide(landmarks, exercise, settings.minVisibility) : null;
+    if (!picked) {
+      tracking = false;
+      goodSince = null;
+      if (holding) pause('Stay in frame. The timer paused.', t);
+      return snapshot();
+    }
+
+    tracking = true;
+    side = picked.name;
+    const problem = exercise.holdIssue(landmarks, picked.joints);
+    issue = problem;
+
+    if (!problem) {
+      if (holding) {
+        holdMs += pendingMs + step;
+        pendingMs = 0;
+        badSince = null;
+      } else {
+        goodSince ??= t;
+        if (t - goodSince >= settings.armMs) {
+          lastEvent = { type: started ? 'resume' : 'start', t };
+          holding = true;
+          started = true;
+        }
+      }
+      return snapshot();
+    }
+
+    goodSince = null;
+    if (holding) {
+      badSince ??= t;
+      pendingMs += step;
+      if (t - badSince >= settings.graceMs) pause(problem, t);
+    }
+    return snapshot();
+  }
+
+  return { exercise, update, reset, snapshot };
+}
+
+// The right tracker for an exercise: a rep counter, or a hold timer.
+export function createTracker(exerciseKey, options) {
+  return EXERCISES[exerciseKey]?.kind === 'hold'
+    ? createHoldTimer(exerciseKey, options)
+    : createRepCounter(exerciseKey, options);
 }
 
 /* ---------------------------- recordings ---------------------------- */
@@ -417,10 +627,10 @@ export function decodeFrame([t, points]) {
   };
 }
 
-// Replays recorded frames through a fresh counter and returns the final
+// Replays recorded frames through a fresh tracker and returns the final
 // snapshot. Used by tests and to re-check uploaded results.
 export function replay(exerciseKey, frames, options) {
-  const counter = createRepCounter(exerciseKey, options);
+  const counter = createTracker(exerciseKey, options);
   let result = counter.snapshot();
 
   for (const frame of frames) {
