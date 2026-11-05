@@ -129,7 +129,7 @@ test('rejects reps that are not deep enough and says why', () => {
 });
 
 test('rejects reps that are too fast to be real', () => {
-  const result = replay('pushup', framesFor(pushup, setAngles({ top: 170, bottom: 60, count: 1, repMs: 200 })));
+  const result = replay('pushup', framesFor(pushup, setAngles({ top: 170, bottom: 90, count: 1, repMs: 300 })));
   assert.equal(result.reps, 0);
   assert.equal(result.rejected.length, 1);
   assert.ok(result.rejected[0].reasons.some(reason => reason.startsWith('Too fast')));
@@ -146,6 +146,102 @@ test('small wobbles near the top never count', () => {
   const result = replay('pushup', framesFor(pushup, wobble));
   assert.equal(result.reps, 0);
   assert.equal(result.rejected.length, 0);
+});
+
+/* ---------------------------- not a squat ---------------------------- */
+
+// Standing still and lifting one knee, seen from the side: the knee
+// bends like a squat, but the hip stays up and the foot leaves the floor.
+// `lift` is how far the thigh swings forward, in degrees from vertical.
+function kneeRaise(lift, { side = 'left' } = {}) {
+  const rad = (lift * Math.PI) / 180;
+  const hip = [0.52, 0.52];
+  const knee = [hip[0] + 0.2 * Math.sin(rad), hip[1] + 0.2 * Math.cos(rad)];
+  const ankle = [knee[0], knee[1] + 0.18];
+  return sideOnBody({ shoulder: [0.52, 0.27], hip, knee, ankle }, side);
+}
+
+test('knee raises do not count as squats', () => {
+  // A thigh lift of 0 → 90 degrees takes the knee angle from 180 to 90.
+  const lifts = setAngles({ top: 0, bottom: 90, count: 4 }).map(angle => angle);
+  const result = replay('squat', framesFor(kneeRaise, lifts));
+  assert.equal(result.reps, 0);
+  assert.equal(result.rejected.length, 4);
+  assert.equal(result.rejected[0].reason, 'Keep both feet on the floor. Lifting a knee is not a squat.');
+  assert.ok(result.rejected[0].reasons.includes('Sit your hips down, not just your knees.'));
+});
+
+test('squats still count after knee raises in the same set', () => {
+  const raises = framesFor(kneeRaise, setAngles({ top: 0, bottom: 90, count: 2 }));
+  const squats = framesFor(squat, setAngles({ top: 175, bottom: 85, count: 3 }), undefined, raises.at(-1).t + FRAME_MS);
+  const result = replay('squat', [...raises, ...squats]);
+  assert.equal(result.reps, 3);
+});
+
+/* ---------------------------- phantom bodies ---------------------------- */
+
+// Small seeded random generator, so "random" tests repeat exactly.
+function seeded(seed) {
+  let state = seed;
+  return () => {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
+
+// What a pose model can output when nobody is in frame: it locks onto
+// clutter and its "joints" wander smoothly around the image with high
+// confidence. `step` sets how fast they wander.
+function phantomFrames(count, seed, step) {
+  const random = seeded(seed);
+  const joints = Array.from({ length: 33 }, () => ({ x: random(), y: random(), vx: 0, vy: 0 }));
+  const clamp01 = n => Math.min(1, Math.max(0, n));
+  return Array.from({ length: count }, (_, i) => ({
+    t: i * FRAME_MS,
+    landmarks: joints.map(joint => {
+      joint.vx = 0.85 * joint.vx + (random() - 0.5) * step;
+      joint.vy = 0.85 * joint.vy + (random() - 0.5) * step;
+      joint.x = clamp01(joint.x + joint.vx);
+      joint.y = clamp01(joint.y + joint.vy);
+      return { x: joint.x, y: joint.y, z: 0, visibility: 0.9 };
+    }),
+  }));
+}
+
+// Before the phantom checks, one minute of this added up to several
+// fake squat reps.
+test('a phantom body wandering around an empty frame never counts reps', () => {
+  for (const exercise of ['squat', 'pushup']) {
+    for (const step of [0.01, 0.02, 0.04]) {
+      for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+        const result = replay(exercise, phantomFrames(1800, seed, step));
+        assert.equal(result.reps, 0, `${exercise}, step ${step}, seed ${seed}`);
+      }
+    }
+  }
+});
+
+test('a sudden tracking jump mid-rep cancels the rep without penalty', () => {
+  const frames = framesFor(squat, setAngles({ top: 175, bottom: 85, count: 1 }));
+  const middle = Math.floor(frames.length / 2);
+  // One frame where the knee snaps straight, then back: a glitch.
+  frames[middle - 8].landmarks = squat(175);
+  const result = replay('squat', frames);
+  assert.equal(result.reps, 0);
+  assert.equal(result.rejected.length, 0);
+});
+
+test('the start position must be held before reps count', () => {
+  // Only one frame at the top, then straight into a rep.
+  const angles = [175, ...setAngles({ top: 175, bottom: 85, count: 1, holdMs: 0 })];
+  const result = replay('squat', framesFor(squat, angles));
+  assert.equal(result.reps, 0);
+});
+
+test('a body that is not upright is not tracked for squats', () => {
+  const counter = createRepCounter('squat');
+  const upsideDown = squat(175).map(point => ({ ...point, y: 1 - point.y }));
+  assert.equal(counter.update(upsideDown, 0).tracking, false);
 });
 
 /* ---------------------------- tracking ---------------------------- */
