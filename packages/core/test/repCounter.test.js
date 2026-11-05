@@ -178,6 +178,69 @@ test('squats still count after knee raises in the same set', () => {
   assert.equal(result.reps, 3);
 });
 
+/* ---------------------------- not a push-up ---------------------------- */
+
+const pushupMotion = () => setAngles({ top: 170, bottom: 80, count: 4 });
+
+// Only the upper body is in frame. The model still outputs hips and
+// ankles, guessed, with low visibility, and here guessed in exactly the
+// right place for a push-up, the worst case.
+test('a push motion with only the upper body in frame does not count', () => {
+  const upperBodyOnly = (angle, options) =>
+    pushup(angle, options).map((point, index) =>
+      [23, 24, 27, 28].includes(index) ? { ...point, visibility: 0.2 } : point,
+    );
+  const result = replay('pushup', framesFor(upperBodyOnly, pushupMotion()));
+  assert.equal(result.reps, 0);
+  assert.equal(result.tracking, false);
+});
+
+test('a guessed ankle outside the frame is not trusted', () => {
+  const ankleOffFrame = (angle, options) =>
+    pushup(angle, options).map((point, index) => (index === 27 ? { ...point, y: 1.3 } : point));
+  assert.equal(replay('pushup', framesFor(ankleOffFrame, pushupMotion())).reps, 0);
+});
+
+// Lying on your back and pressing your hands up: the body is horizontal
+// and the elbow bends and straightens, but the hands are above the
+// shoulders instead of on the floor.
+function floorPress(elbow) {
+  const rad = (elbow * Math.PI) / 180;
+  const elbowPos = [0.3, 0.6];
+  return sideOnBody(
+    {
+      shoulder: [0.35, 0.6],
+      elbow: elbowPos,
+      wrist: [elbowPos[0] + 0.05 * Math.cos(rad), elbowPos[1] - 0.05 * Math.sin(rad)],
+      hip: [0.6, 0.61],
+      ankle: [0.85, 0.62],
+    },
+    'left',
+  );
+}
+
+test('pressing upward while lying on your back does not count', () => {
+  assert.equal(replay('pushup', framesFor(floorPress, pushupMotion())).reps, 0);
+});
+
+test('a push motion while standing does not count', () => {
+  const standingPush = elbow => {
+    const rad = (elbow * Math.PI) / 180;
+    const elbowPos = [0.6, 0.32];
+    return sideOnBody(
+      {
+        shoulder: [0.5, 0.3],
+        elbow: elbowPos,
+        wrist: [elbowPos[0] - 0.1 * Math.cos(rad), elbowPos[1] - 0.1 * Math.sin(rad)],
+        hip: [0.5, 0.55],
+        ankle: [0.5, 0.9],
+      },
+      'left',
+    );
+  };
+  assert.equal(replay('pushup', framesFor(standingPush, pushupMotion())).reps, 0);
+});
+
 /* ---------------------------- phantom bodies ---------------------------- */
 
 // Small seeded random generator, so "random" tests repeat exactly.
