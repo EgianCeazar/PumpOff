@@ -5,7 +5,7 @@
   "description": "Shared rep counting, form checks and recordings for PumpOff (web, Android and server).",
   "type": "module",
   "exports": {
-    ".": "./src/repCounter.js"
+    ".": "./src/index.js"
   },
   "scripts": {
     "test": "node --test"

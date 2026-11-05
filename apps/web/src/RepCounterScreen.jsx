@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision';
-import { EXERCISES, createRepCounter, encodeFrame } from '@pumpoff/core';
+import { EXERCISES, createRepCounter, encodeFrame, makeSet, sessionSummary } from '@pumpoff/core';
 import { loadPoseLandmarker } from './poseModel.js';
+import { describeMistakes, describeSet, formatDuration, formatPercent } from './format.js';
 
 const SET_SECONDS = 60;
 const COUNTDOWN_SECONDS = 3;
@@ -17,7 +18,14 @@ const blankSnapshot = exercise => ({
   lastEvent: null,
 });
 
-export default function RepCounterScreen() {
+const BEST_LABELS = { anySet: 'best set', timed60: 'best 60s set' };
+
+function bestMessage(beaten) {
+  if (!beaten?.length) return '';
+  return `New personal ${beaten.map(key => BEST_LABELS[key] ?? 'best').join(' and ')}!`;
+}
+
+export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   const [exercise, setExercise] = useState('pushup');
   const [modelState, setModelState] = useState('loading'); // loading | ready | failed
   const [cameraOn, setCameraOn] = useState(false);
@@ -44,6 +52,10 @@ export default function RepCounterScreen() {
   const countingRef = useRef(true);
   const recordRef = useRef(null); // { startedAt, frames }
   const timersRef = useRef([]);
+  // When the current set's first rep attempt began (wall clock).
+  const setStartRef = useRef(null);
+  const onSaveSetRef = useRef(onSaveSet);
+  onSaveSetRef.current = onSaveSet;
 
   /* ---------------------------- model ---------------------------- */
 
@@ -105,6 +117,11 @@ export default function RepCounterScreen() {
       if (countingRef.current) {
         const snap = counterRef.current.update(landmarks, now);
         setSnapshot(snap);
+        // A free set starts with its first rep attempt (about 1.5 s
+        // before the first rep finishes).
+        if (snap.lastEvent && setStartRef.current === null) {
+          setStartRef.current = Date.now() - 1500;
+        }
         if (snap.lastEvent?.type === 'rep') {
           setMessage(`Rep ${snap.lastEvent.reps}`);
         } else if (snap.lastEvent?.type === 'rejected') {
@@ -173,11 +190,48 @@ export default function RepCounterScreen() {
   const resetCounter = useCallback(
     key => {
       counterRef.current = createRepCounter(key);
+      setStartRef.current = null;
       setSnapshot(blankSnapshot(key));
       setMessage('');
     },
     [],
   );
+
+  // Saves the counter's current set into the workout. Returns null when
+  // there's nothing to save.
+  const saveCurrentSet = (mode, seconds = null) => {
+    const snap = counterRef.current.snapshot();
+    if (!snap.reps && !snap.rejected.length) return null;
+    const now = Date.now();
+    const set = makeSet({
+      exercise: snap.exercise,
+      reps: snap.reps,
+      rejected: snap.rejected,
+      startedAt: setStartRef.current ?? now,
+      endedAt: now,
+      mode,
+      seconds,
+    });
+    return { set, beaten: onSaveSetRef.current(set) };
+  };
+
+  const saveFreeSet = () => {
+    const saved = saveCurrentSet('free');
+    if (!saved) return;
+    resetCounter(exercise);
+    const best = bestMessage(saved.beaten);
+    setMessage(`Saved: ${saved.set.reps} ${EXERCISES[exercise].name.toLowerCase()}${best ? ` · ${best}` : ''}`);
+  };
+
+  const finishWorkout = () => {
+    if (setPhase === 'countdown' || setPhase === 'active') return;
+    saveCurrentSet('free');
+    resetCounter(exercise);
+    setSetPhase('free');
+    setSetResult(null);
+    onFinishWorkout();
+    setMessage('Workout saved. See it in History.');
+  };
 
   const chooseExercise = key => {
     if (setPhase === 'countdown' || setPhase === 'active') return;
@@ -208,6 +262,7 @@ export default function RepCounterScreen() {
     timersRef.current.push(
       setTimeout(() => {
         countingRef.current = true;
+        setStartRef.current = Date.now();
         setSetPhase('active');
         setSecondsLeft(SET_SECONDS);
         setMessage('Go!');
@@ -222,9 +277,10 @@ export default function RepCounterScreen() {
       setTimeout(() => {
         countingRef.current = false;
         const final = counterRef.current.snapshot();
+        const saved = saveCurrentSet('timed', SET_SECONDS);
         setSetPhase('done');
-        setSetResult(final);
-        setMessage('Time!');
+        setSetResult({ ...final, saved: Boolean(saved), beaten: saved?.beaten ?? [] });
+        setMessage(saved?.beaten.length ? bestMessage(saved.beaten) : 'Time!');
       }, (COUNTDOWN_SECONDS + SET_SECONDS) * 1000),
     );
   };
@@ -276,9 +332,8 @@ export default function RepCounterScreen() {
   return (
     <main className="app">
       <header>
-        <p className="eyebrow">PumpOff · prototype</p>
-        <h1>Rep Counter</h1>
-        <p className="sub">Prop up your phone or laptop, pick an exercise, and let the camera count your reps.</p>
+        <h1>Workout</h1>
+        <p className="sub">Prop up your phone, pick an exercise, and let the camera count your reps. Save each set to track your progress.</p>
       </header>
 
       <section className="panel">
@@ -352,6 +407,15 @@ export default function RepCounterScreen() {
               Start {SET_SECONDS}s set
             </button>
           )}
+          {!timedBusy && (
+            <button
+              type="button"
+              onClick={saveFreeSet}
+              disabled={!snapshot.reps && !snapshot.rejected.length}
+            >
+              Save set
+            </button>
+          )}
           <button
             type="button"
             className="secondary"
@@ -372,6 +436,8 @@ export default function RepCounterScreen() {
       {setPhase === 'done' && setResult && (
         <section className="panel result">
           <h2>Set complete</h2>
+          {setResult.beaten?.length > 0 && <p className="best">{bestMessage(setResult.beaten)}</p>}
+          {setResult.saved && <p className="meta">Saved to your workout.</p>}
           <div className="result-grid">
             <div><span>Reps counted</span><strong>{setResult.reps}</strong></div>
             <div><span>Not counted</span><strong>{setResult.rejected.length}</strong></div>
@@ -385,6 +451,10 @@ export default function RepCounterScreen() {
           )}
           <button type="button" onClick={startTimedSet}>Go again</button>
         </section>
+      )}
+
+      {log.current && (
+        <CurrentWorkout session={log.current} onFinish={finishWorkout} busy={timedBusy} />
       )}
 
       <section className="panel">
@@ -413,5 +483,35 @@ export default function RepCounterScreen() {
 
       <footer className="meta">Pose tracking runs on this device. No video is uploaded.</footer>
     </main>
+  );
+}
+
+function CurrentWorkout({ session, onFinish, busy }) {
+  const summary = sessionSummary(session);
+  return (
+    <section className="panel">
+      <div className="panel-head">
+        <h2>Today's workout</h2>
+        <span className="meta">
+          {summary.sets} {summary.sets === 1 ? 'set' : 'sets'} · {summary.reps} reps · {formatDuration(summary.durationMs)}
+        </span>
+      </div>
+      <ol className="set-list">
+        {session.sets.map(set => (
+          <li key={set.id}>
+            <span>{describeSet(set)}</span>
+            {set.notCounted > 0 && (
+              <small>
+                {set.notCounted} not counted: {describeMistakes(set.notCountedReasons)}
+              </small>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p className="meta">Clean reps: {formatPercent(summary.cleanRate)}</p>
+      <div className="controls">
+        <button type="button" onClick={onFinish} disabled={busy}>Finish workout</button>
+      </div>
+    </section>
   );
 }

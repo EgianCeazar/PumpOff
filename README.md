@@ -1,6 +1,8 @@
 # PumpOff
 
-Live 1v1 exercise battles: see your opponent on video while the app counts both players' reps, then climb the leaderboard. Think FaceTime plus a rep counter.
+Equal parts fitness tracker and ranked exercise battles. Train solo and the camera counts your reps, logs every workout, and tracks your progress; then take on friends in live 1v1 video battles and climb the ranks.
+
+**Try it:** https://egianceazar.github.io/PumpOff/
 
 PumpOff grew out of [FlexOff](https://github.com/EgianCeazar/Flex_Off), a bodybuilding pose practice app. Pose judging turned out to be unreliable with webcam pose models, while rep counting uses large joint movements those models track well.
 
@@ -15,9 +17,9 @@ PumpOff grew out of [FlexOff](https://github.com/EgianCeazar/Flex_Off), a bodybu
 ```text
 PumpOff/
 ├── packages/
-│   └── core/          # Shared rep counting, form checks, recordings (web, Android, server)
+│   └── core/          # Shared rep counting, workout log and stats (web, Android, server)
 └── apps/
-    ├── web/           # Web app (planned)
+    ├── web/           # Web app: workout, history, progress
     └── mobile/        # Android app with Expo + React Native (planned)
 ```
 
@@ -35,10 +37,11 @@ PumpOff/
 ## Roadmap
 
 1. **Web rep counter prototype**: push-ups and squats, tuned with recorded sets. *(built, needs tuning with real sets)*
-2. **Android MVP**: one exercise, friend battle by invite link with live video, result screen, sign-in.
-3. **Leaderboards**: personal bests, match history, friends and weekly boards.
-4. **Ranked play**: Elo, matchmaking, server-side rep verification.
-5. **Polish and growth**: more exercises, seasons, badges, iOS.
+2. **Solo tracking**: workouts saved offline on the device, history, personal bests, weekly reps, streaks, form feedback, backup. *(built)*
+3. **Android MVP**: one exercise, friend battle by invite link with live video, result screen, sign-in.
+4. **Leaderboards**: match history, friends and weekly boards.
+5. **Ranked play**: Elo, matchmaking, server-side rep verification.
+6. **Polish and growth**: more exercises, seasons, badges, iOS.
 
 ## Development
 
