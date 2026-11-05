@@ -1,15 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision';
-import { EXERCISES, createRepCounter, encodeFrame, makeSet, sessionSummary } from '@pumpoff/core';
+import { EXERCISES, createTracker, encodeFrame, makeSet, sessionSummary } from '@pumpoff/core';
 import { loadPoseLandmarker } from './poseModel.js';
-import { describeMistakes, describeSet, formatDuration, formatPercent } from './format.js';
+import { describeMistakes, describeSet, formatDuration, formatHold, formatPercent } from './format.js';
 
 const SET_SECONDS = 60;
 const COUNTDOWN_SECONDS = 3;
+// A plank shorter than this isn't worth logging.
+const MIN_HOLD_MS = 1000;
+
+const isHold = key => EXERCISES[key]?.kind === 'hold';
 
 const blankSnapshot = exercise => ({
   exercise,
+  kind: isHold(exercise) ? 'hold' : 'reps',
   reps: 0,
+  holdMs: 0,
+  holding: false,
+  issue: null,
   rejected: [],
   phase: 'waiting',
   angle: null,
@@ -18,7 +26,10 @@ const blankSnapshot = exercise => ({
   lastEvent: null,
 });
 
-const BEST_LABELS = { anySet: 'best set', timed60: 'best 60s set' };
+const hasSomethingToSave = snap =>
+  snap.kind === 'hold' ? snap.holdMs >= MIN_HOLD_MS : Boolean(snap.reps || snap.rejected.length);
+
+const BEST_LABELS = { anySet: 'best set', timed60: 'best 60s set', longestHold: 'longest hold' };
 
 function bestMessage(beaten) {
   if (!beaten?.length) return '';
@@ -46,7 +57,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const landmarkerRef = useRef(null);
-  const counterRef = useRef(createRepCounter('pushup'));
+  const counterRef = useRef(createTracker('pushup'));
   const rafRef = useRef(0);
   const lastVideoTimeRef = useRef(-1);
   const countingRef = useRef(true);
@@ -122,11 +133,12 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
         if (snap.lastEvent && setStartRef.current === null) {
           setStartRef.current = Date.now() - 1500;
         }
-        if (snap.lastEvent?.type === 'rep') {
-          setMessage(`Rep ${snap.lastEvent.reps}`);
-        } else if (snap.lastEvent?.type === 'rejected') {
-          setMessage(`Not counted: ${snap.lastEvent.reason}`);
-        }
+        const event = snap.lastEvent;
+        if (event?.type === 'rep') setMessage(`Rep ${event.reps}`);
+        else if (event?.type === 'rejected') setMessage(`Not counted: ${event.reason}`);
+        else if (event?.type === 'start') setMessage('Holding. Keep it straight.');
+        else if (event?.type === 'resume') setMessage('Back in position. Timer running.');
+        else if (event?.type === 'break') setMessage(`Paused: ${event.reason}`);
       }
     }
 
@@ -189,7 +201,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
 
   const resetCounter = useCallback(
     key => {
-      counterRef.current = createRepCounter(key);
+      counterRef.current = createTracker(key);
       setStartRef.current = null;
       setSnapshot(blankSnapshot(key));
       setMessage('');
@@ -201,12 +213,14 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   // there's nothing to save.
   const saveCurrentSet = (mode, seconds = null) => {
     const snap = counterRef.current.snapshot();
-    if (!snap.reps && !snap.rejected.length) return null;
+    if (!hasSomethingToSave(snap)) return null;
     const now = Date.now();
+    const hold = snap.kind === 'hold';
     const set = makeSet({
       exercise: snap.exercise,
       reps: snap.reps,
       rejected: snap.rejected,
+      holdMs: hold ? snap.holdMs : null,
       startedAt: setStartRef.current ?? now,
       endedAt: now,
       mode,
@@ -220,7 +234,11 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
     if (!saved) return;
     resetCounter(exercise);
     const best = bestMessage(saved.beaten);
-    setMessage(`Saved: ${saved.set.reps} ${EXERCISES[exercise].name.toLowerCase()}${best ? ` · ${best}` : ''}`);
+    const what =
+      saved.set.holdMs !== null
+        ? `${formatHold(saved.set.holdMs)} plank`
+        : `${saved.set.reps} ${EXERCISES[exercise].name.toLowerCase()}`;
+    setMessage(`Saved: ${what}${best ? ` · ${best}` : ''}`);
   };
 
   const finishWorkout = () => {
@@ -326,8 +344,16 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   /* ---------------------------- view ---------------------------- */
 
   const info = EXERCISES[exercise];
+  const hold = info.kind === 'hold';
   const timedBusy = setPhase === 'countdown' || setPhase === 'active';
   const shown = setPhase === 'done' && setResult ? setResult : snapshot;
+
+  let pill = 'Step into frame';
+  if (snapshot.tracking && hold) {
+    pill = snapshot.holding ? 'Holding' : snapshot.issue ?? 'Get into position';
+  } else if (snapshot.tracking) {
+    pill = `Tracking ${snapshot.side} side${snapshot.phase === 'waiting' ? ' · get into the start position' : ''}`;
+  }
 
   return (
     <main className="app">
@@ -359,15 +385,11 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
 
           <div className="hud-reps" aria-live="polite">
             <span>{info.name}</span>
-            <strong>{shown.reps}</strong>
+            <strong>{hold ? formatHold(snapshot.holdMs) : shown.reps}</strong>
           </div>
 
           {cameraOn && (
-            <div className={`hud-pill ${snapshot.tracking ? 'ok' : ''}`}>
-              {snapshot.tracking
-                ? `Tracking ${snapshot.side} side${snapshot.phase === 'waiting' ? ' · get into the start position' : ''}`
-                : 'Step into frame'}
-            </div>
+            <div className={`hud-pill ${snapshot.tracking && (!hold || snapshot.holding) ? 'ok' : ''}`}>{pill}</div>
           )}
 
           {timedBusy && (
@@ -403,17 +425,15 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
           {timedBusy ? (
             <button type="button" className="secondary" onClick={endTimedSet}>Stop set</button>
           ) : (
-            <button type="button" onClick={startTimedSet} disabled={!cameraOn}>
-              Start {SET_SECONDS}s set
-            </button>
+            !hold && (
+              <button type="button" onClick={startTimedSet} disabled={!cameraOn}>
+                Start {SET_SECONDS}s set
+              </button>
+            )
           )}
           {!timedBusy && (
-            <button
-              type="button"
-              onClick={saveFreeSet}
-              disabled={!snapshot.reps && !snapshot.rejected.length}
-            >
-              Save set
+            <button type="button" onClick={saveFreeSet} disabled={!hasSomethingToSave(snapshot)}>
+              {hold ? 'Save hold' : 'Save set'}
             </button>
           )}
           <button
@@ -422,11 +442,11 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
             onClick={() => chooseExercise(exercise)}
             disabled={timedBusy}
           >
-            Reset count
+            {hold ? 'Reset timer' : 'Reset count'}
           </button>
         </div>
 
-        {snapshot.angle !== null && cameraOn && (
+        {!hold && snapshot.angle !== null && cameraOn && (
           <p className="meta">
             Angle {snapshot.angle}° · needs {info.bottom}° or lower, back to {info.top}°
           </p>

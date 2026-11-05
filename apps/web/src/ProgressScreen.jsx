@@ -11,7 +11,7 @@ import {
   weeklyReps,
 } from '@pumpoff/core';
 import WeeklyChart from './WeeklyChart.jsx';
-import { formatPercent, formatShortDate } from './format.js';
+import { formatHold, formatPercent, formatShortDate } from './format.js';
 
 export default function ProgressScreen({ log, onReplaceLog }) {
   const [backupMessage, setBackupMessage] = useState('');
@@ -89,6 +89,28 @@ export default function ProgressScreen({ log, onReplaceLog }) {
             <div className="bests">
               {Object.values(EXERCISES).map(exercise => {
                 const entry = bests[exercise.key];
+                if (exercise.kind === 'hold') {
+                  return (
+                    <div key={exercise.key} className="best-card">
+                      <h3>{exercise.name}</h3>
+                      <dl>
+                        <div>
+                          <dt>Longest hold</dt>
+                          <dd>
+                            {entry?.longestHold ? (
+                              <>
+                                <strong>{formatHold(entry.longestHold.ms)}</strong>{' '}
+                                <small>{formatShortDate(entry.longestHold.at)}</small>
+                              </>
+                            ) : (
+                              '–'
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  );
+                }
                 return (
                   <div key={exercise.key} className="best-card">
                     <h3>{exercise.name}</h3>
@@ -125,7 +147,7 @@ export default function ProgressScreen({ log, onReplaceLog }) {
           </section>
 
           <section className="panel">
-            <h2>Reps per week</h2>
+            <h2>Per week</h2>
             <WeeklyChart weeks={weeklyReps(log, now, 8)} />
           </section>
 
