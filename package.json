@@ -8,6 +8,9 @@
     "apps/*"
   ],
   "scripts": {
-    "test": "npm --workspaces --if-present test"
+    "test": "npm --workspaces --if-present test",
+    "dev": "npm --workspace @pumpoff/web run dev",
+    "dev:phone": "npm --workspace @pumpoff/web run dev:phone",
+    "build": "npm --workspace @pumpoff/web run build"
   }
 }

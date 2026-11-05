@@ -34,7 +34,7 @@ PumpOff/
 
 ## Roadmap
 
-1. **Web rep counter prototype**: push-ups and squats, tuned with recorded sets. *(in progress)*
+1. **Web rep counter prototype**: push-ups and squats, tuned with recorded sets. *(built, needs tuning with real sets)*
 2. **Android MVP**: one exercise, friend battle by invite link with live video, result screen, sign-in.
 3. **Leaderboards**: personal bests, match history, friends and weekly boards.
 4. **Ranked play**: Elo, matchmaking, server-side rep verification.
@@ -48,6 +48,29 @@ Requires Node.js LTS.
 npm install
 npm test
 ```
+
+### Try the rep counter
+
+On your PC (opens at `http://localhost:5173/PumpOff/`):
+
+```bash
+npm run dev
+```
+
+On your phone, which needs HTTPS for camera access:
+
+```bash
+npm run dev:phone
+```
+
+1. Connect your phone to the same Wi-Fi as your PC.
+2. Open the `Network` address the command prints, for example `https://192.168.1.20:5173/PumpOff/`.
+3. Your phone warns about the certificate once. Choose "Advanced", then continue to the site.
+4. If it doesn't load, allow Node.js through Windows Firewall on private networks.
+
+### Record sets for tuning
+
+Use **Record a set for tuning** in the web app, then follow `packages/core/test/fixtures/README.md` to turn the recording into a test.
 
 ## How rep counting works
 

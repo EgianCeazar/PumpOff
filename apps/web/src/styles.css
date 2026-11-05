@@ -1,0 +1,72 @@
+* { box-sizing: border-box; }
+
+:root {
+  color-scheme: dark;
+  --bg: #0b0f1a;
+  --panel: #121826;
+  --line: #273249;
+  --text: #f3f6fc;
+  --muted: #a3afc4;
+  --accent: #a3e635;
+  --accent-ink: #13200a;
+  --warn: #f97316;
+  --danger: #ef4444;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body { margin: 0; min-width: 320px; background: var(--bg); }
+button, a { font: inherit; }
+
+.app { width: min(100%, 920px); margin: 0 auto; padding: 24px 16px 48px; }
+.eyebrow { margin: 0; color: var(--accent); text-transform: uppercase; letter-spacing: .16em; font-size: .75rem; font-weight: 800; }
+h1 { margin: 6px 0; font-size: clamp(2rem, 7vw, 3rem); letter-spacing: -.04em; }
+h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.sub { margin: 0; color: var(--muted); line-height: 1.55; }
+
+.panel { margin-top: 18px; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; }
+
+.segmented { display: inline-flex; gap: 4px; padding: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+.segmented button { padding: 8px 16px; background: transparent; color: var(--muted); }
+.segmented button.active { background: var(--accent); color: var(--accent-ink); }
+
+.setup { color: var(--muted); line-height: 1.5; margin: 12px 0; }
+.setup strong { color: var(--text); }
+
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #03050a; border-radius: 14px; overflow: hidden; }
+.stage video, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.stage canvas { pointer-events: none; }
+.mirror { transform: scaleX(-1); }
+.stage-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; color: var(--muted); }
+
+.hud-reps { position: absolute; left: 12px; top: 12px; padding: 8px 14px; background: #0b0f1add; border: 1px solid var(--accent); border-radius: 14px; }
+.hud-reps span { display: block; color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; }
+.hud-reps strong { display: block; font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hud-pill { position: absolute; right: 12px; top: 12px; max-width: 55%; padding: 6px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; color: #fed7aa; background: #431407dd; border: 1px solid #9a3412; }
+.hud-pill.ok { color: #d9f99d; background: #1a2e05dd; border-color: #4d7c0f; }
+.hud-timer { position: absolute; right: 12px; bottom: 12px; padding: 6px 14px; border-radius: 12px; font-size: 2rem; font-weight: 800; background: #0b0f1add; border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.hud-message { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 140px); padding: 8px 12px; border-radius: 12px; background: #0b0f1add; border: 1px solid var(--line); font-weight: 700; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+button { border: 0; border-radius: 12px; padding: 11px 16px; background: var(--accent); color: var(--accent-ink); font-weight: 800; cursor: pointer; }
+button.secondary { background: #222c40; color: var(--text); }
+button.danger { background: var(--danger); color: #fff; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.button-link { color: var(--accent); font-weight: 700; word-break: break-all; }
+
+.meta { color: var(--muted); font-size: .85rem; margin: 10px 0 0; }
+.error { color: #fca5a5; margin: 10px 0 0; }
+
+.result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 8px 0 12px; }
+.result-grid div { padding: 12px; background: var(--bg); border-radius: 12px; }
+.result-grid span { display: block; color: var(--muted); font-size: .8rem; }
+.result-grid strong { font-size: 2rem; color: var(--accent); }
+.reasons { margin: 0 0 12px; padding-left: 20px; color: var(--muted); line-height: 1.6; }
+
+footer { margin-top: 24px; text-align: center; }
+
+@media (max-width: 520px) {
+  .stage { aspect-ratio: 3 / 4; }
+  .hud-pill { font-size: .65rem; }
+}
