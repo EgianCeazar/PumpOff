@@ -1,0 +1,13 @@
+{
+  "name": "pumpoff",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PumpOff: live 1v1 exercise battles with rep counting, leaderboards and ranking.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm --workspaces --if-present test"
+  }
+}

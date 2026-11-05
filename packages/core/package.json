@@ -1,0 +1,13 @@
+{
+  "name": "@pumpoff/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared rep counting, form checks and recordings for PumpOff (web, Android and server).",
+  "type": "module",
+  "exports": {
+    ".": "./src/repCounter.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

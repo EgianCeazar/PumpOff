@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# Android / Expo
+android/app/build/
+.gradle/
+.expo/
+*.keystore
+*.jks
+local.properties
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
