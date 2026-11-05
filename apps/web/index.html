@@ -1,10 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light" data-accent="tomato">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0f1a" />
-    <title>PumpOff Rep Counter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f0e8" />
+    <title>PumpOff</title>
+    <script>
+      // Apply the saved theme before the first paint, so the page never flashes the wrong colours.
+      // Keep in sync with src/theme.js.
+      (function () {
+        var theme = 'auto';
+        var accent = 'tomato';
+        try {
+          var saved = JSON.parse(localStorage.getItem('pumpoff.appearance.v1') || '{}');
+          if (['auto', 'light', 'dark', 'contrast'].indexOf(saved.theme) >= 0) theme = saved.theme;
+          if (['tomato', 'teal', 'blue', 'berry'].indexOf(saved.accent) >= 0) accent = saved.accent;
+        } catch (e) {}
+        if (theme === 'auto') {
+          try {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          } catch (e) {
+            theme = 'light';
+          }
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-accent', accent);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

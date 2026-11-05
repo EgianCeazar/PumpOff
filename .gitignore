@@ -17,3 +17,17 @@ local.properties
 Thumbs.db
 .vscode/
 .idea/
+
+# Claude Code: personal settings, worktrees and the impeccable engine binary
+.claude/settings.local.json
+.claude/worktrees/
+.claude/skills/impeccable/scripts/bin/
+
+# Impeccable scratch: decision pages, mocks, review captures
+.impeccable/questions/
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/build/
+.impeccable/live/
+.impeccable/config.local.json
+**/.impeccable/hook.cache.json

@@ -1,6 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { EXERCISES, createTracker, encodeFrame, makeSet, sessionSummary } from '@pumpoff/core';
+import {
+  Camera,
+  CameraOff,
+  ChevronDown,
+  Circle,
+  CircleCheck,
+  CircleX,
+  Download,
+  Flag,
+  Info,
+  RotateCcw,
+  Save,
+  Square,
+  SwitchCamera,
+  Timer,
+} from 'lucide-react';
 import { loadPoseLandmarker } from './poseModel.js';
 import { describeMistakes, describeSet, formatDuration, formatHold, formatPercent } from './format.js';
 
@@ -33,7 +49,7 @@ const BEST_LABELS = { anySet: 'best set', timed60: 'best 60s set', longestHold: 
 
 function bestMessage(beaten) {
   if (!beaten?.length) return '';
-  return `New personal ${beaten.map(key => BEST_LABELS[key] ?? 'best').join(' and ')}!`;
+  return `New personal ${beaten.map(key => BEST_LABELS[key] ?? 'best').join(' and ')}.`;
 }
 
 export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
@@ -42,7 +58,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   const [cameraOn, setCameraOn] = useState(false);
   const [facing, setFacing] = useState('user');
   const [snapshot, setSnapshot] = useState(() => blankSnapshot('pushup'));
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(null); // { text, tone: 'ok' | 'warn' | 'info' }
   const [error, setError] = useState('');
 
   // free: counting any time · countdown/active: timed set · done: set finished
@@ -106,8 +122,11 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!landmarks) return;
     const drawing = new DrawingUtils(ctx);
-    drawing.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, { color: '#a3e635', lineWidth: 3 });
-    drawing.drawLandmarks(landmarks, { color: '#f97316', radius: 3 });
+    // White limbs with a dark edge read on any camera image; joints take the button colour.
+    const joint = getComputedStyle(document.documentElement).getPropertyValue('--act').trim() || '#c2421b';
+    drawing.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, { color: 'rgba(0,0,0,0.45)', lineWidth: 7 });
+    drawing.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, { color: '#ffffff', lineWidth: 4 });
+    drawing.drawLandmarks(landmarks, { color: '#ffffff', fillColor: joint, lineWidth: 2, radius: 5 });
   }, []);
 
   const loop = useCallback(() => {
@@ -134,11 +153,11 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
           setStartRef.current = Date.now() - 1500;
         }
         const event = snap.lastEvent;
-        if (event?.type === 'rep') setMessage(`Rep ${event.reps}`);
-        else if (event?.type === 'rejected') setMessage(`Not counted: ${event.reason}`);
-        else if (event?.type === 'start') setMessage('Holding. Keep it straight.');
-        else if (event?.type === 'resume') setMessage('Back in position. Timer running.');
-        else if (event?.type === 'break') setMessage(`Paused: ${event.reason}`);
+        if (event?.type === 'rep') setMessage({ text: `Rep ${event.reps}`, tone: 'ok' });
+        else if (event?.type === 'rejected') setMessage({ text: `Not counted: ${event.reason}`, tone: 'warn' });
+        else if (event?.type === 'start') setMessage({ text: 'Holding. Keep it straight.', tone: 'ok' });
+        else if (event?.type === 'resume') setMessage({ text: 'Back in position. Timer running.', tone: 'ok' });
+        else if (event?.type === 'break') setMessage({ text: `Paused: ${event.reason}`, tone: 'warn' });
       }
     }
 
@@ -204,7 +223,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
       counterRef.current = createTracker(key);
       setStartRef.current = null;
       setSnapshot(blankSnapshot(key));
-      setMessage('');
+      setMessage(null);
     },
     [],
   );
@@ -238,7 +257,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
       saved.set.holdMs !== null
         ? `${formatHold(saved.set.holdMs)} plank`
         : `${saved.set.reps} ${EXERCISES[exercise].name.toLowerCase()}`;
-    setMessage(`Saved: ${what}${best ? ` · ${best}` : ''}`);
+    setMessage({ text: `Saved: ${what}${best ? ` · ${best}` : ''}`, tone: 'ok' });
   };
 
   const finishWorkout = () => {
@@ -248,7 +267,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
     setSetPhase('free');
     setSetResult(null);
     onFinishWorkout();
-    setMessage('Workout saved. See it in History.');
+    setMessage({ text: 'Workout saved. See it in History.', tone: 'ok' });
   };
 
   const chooseExercise = key => {
@@ -283,7 +302,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
         setStartRef.current = Date.now();
         setSetPhase('active');
         setSecondsLeft(SET_SECONDS);
-        setMessage('Go!');
+        setMessage({ text: 'Go', tone: 'info' });
       }, COUNTDOWN_SECONDS * 1000),
     );
     for (let i = 1; i <= SET_SECONDS; i += 1) {
@@ -298,7 +317,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
         const saved = saveCurrentSet('timed', SET_SECONDS);
         setSetPhase('done');
         setSetResult({ ...final, saved: Boolean(saved), beaten: saved?.beaten ?? [] });
-        setMessage(saved?.beaten.length ? bestMessage(saved.beaten) : 'Time!');
+        setMessage({ text: saved?.beaten.length ? bestMessage(saved.beaten) : 'Time. Set saved.', tone: 'ok' });
       }, (COUNTDOWN_SECONDS + SET_SECONDS) * 1000),
     );
   };
@@ -355,153 +374,216 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
     pill = `Tracking ${snapshot.side} side${snapshot.phase === 'waiting' ? ' · get into the start position' : ''}`;
   }
 
+  const trackingOk = snapshot.tracking && (!hold || snapshot.holding);
+  const MessageIcon = message?.tone === 'warn' ? CircleX : message?.tone === 'ok' ? CircleCheck : Info;
+
   return (
-    <main className="app">
-      <header>
+    <main className="app workout">
+      <header className="page-head">
         <h1>Workout</h1>
-        <p className="sub">Prop up your phone, pick an exercise, and let the camera count your reps. Save each set to track your progress.</p>
+        <p className="sub">Prop up your phone, pick an exercise, and let the camera count your reps.</p>
       </header>
 
-      <section className="panel">
-        <div className="segmented" role="group" aria-label="Exercise">
-          {Object.values(EXERCISES).map(item => (
-            <button
-              key={item.key}
-              type="button"
-              className={item.key === exercise ? 'active' : ''}
-              aria-pressed={item.key === exercise}
-              disabled={timedBusy}
-              onClick={() => chooseExercise(item.key)}
-            >
-              {item.name}
+      <div className="workout-grid">
+        <section className="workout-main" aria-label="Rep counter">
+          <div className="chips" role="group" aria-label="Exercise">
+            {Object.values(EXERCISES).map(item => (
+              <button
+                key={item.key}
+                type="button"
+                className={item.key === exercise ? 'active' : ''}
+                aria-pressed={item.key === exercise}
+                disabled={timedBusy}
+                onClick={() => chooseExercise(item.key)}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+          <div className="stage">
+            <video ref={videoRef} playsInline muted className={facing === 'user' ? 'mirror' : ''} />
+            <canvas ref={canvasRef} className={facing === 'user' ? 'mirror' : ''} />
+
+            <div className="hud-count" aria-live="polite">
+              {/* Keyed on the value so each new rep replays the short count-up animation. */}
+              <strong key={hold ? 'hold' : shown.reps}>{hold ? formatHold(snapshot.holdMs) : shown.reps}</strong>
+              <span>
+                {info.name.toLowerCase()} {hold ? 'held' : 'counted'}
+              </span>
+            </div>
+
+            <div className="hud-side">
+              {cameraOn && (
+                <div className={`hud-pill${trackingOk ? ' ok' : ''}`}>
+                  <span className="dot" aria-hidden="true" />
+                  {pill}
+                </div>
+              )}
+              {timedBusy && (
+                <div className="hud-timer" aria-live="polite">
+                  <Timer aria-hidden="true" />
+                  {setPhase === 'countdown' ? (secondsLeft > 0 ? secondsLeft : 'Go') : `${secondsLeft}s`}
+                </div>
+              )}
+            </div>
+
+            {message && (
+              <div className={`hud-message ${message.tone}`} role="status">
+                <MessageIcon aria-hidden="true" />
+                <span>{message.text}</span>
+              </div>
+            )}
+
+            {!cameraOn && (
+              <div className="stage-empty">
+                <Camera aria-hidden="true" />
+                <span className="stage-empty-title">
+                  {modelState === 'loading' && 'Loading the pose model…'}
+                  {modelState === 'ready' && 'Start the camera to begin.'}
+                  {modelState === 'failed' && 'The pose model could not load. Check your connection and reload.'}
+                </span>
+                <span className="stage-setup">
+                  <strong>Setup:</strong> {info.setup}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {error && <p className="error">{error}</p>}
+
+          <div className="controls">
+            {!cameraOn && (
+              <button type="button" className="primary" onClick={() => startCamera()} disabled={modelState !== 'ready'}>
+                <Camera aria-hidden="true" />
+                Start camera
+              </button>
+            )}
+            {!timedBusy && (
+              <button
+                type="button"
+                className={cameraOn ? 'primary' : ''}
+                onClick={saveFreeSet}
+                disabled={!hasSomethingToSave(snapshot)}
+              >
+                <Save aria-hidden="true" />
+                {hold ? 'Save hold' : 'Save set'}
+              </button>
+            )}
+            {timedBusy ? (
+              <button type="button" onClick={endTimedSet}>
+                <Square aria-hidden="true" />
+                Stop set
+              </button>
+            ) : (
+              !hold && (
+                <button type="button" onClick={startTimedSet} disabled={!cameraOn}>
+                  <Timer aria-hidden="true" />
+                  Start {SET_SECONDS}s set
+                </button>
+              )
+            )}
+            <button type="button" onClick={() => chooseExercise(exercise)} disabled={timedBusy}>
+              <RotateCcw aria-hidden="true" />
+              {hold ? 'Reset timer' : 'Reset count'}
             </button>
-          ))}
-        </div>
-        <p className="setup"><strong>Setup:</strong> {info.setup}</p>
-
-        <div className="stage">
-          <video ref={videoRef} playsInline muted className={facing === 'user' ? 'mirror' : ''} />
-          <canvas ref={canvasRef} className={facing === 'user' ? 'mirror' : ''} />
-
-          <div className="hud-reps" aria-live="polite">
-            <span>{info.name}</span>
-            <strong>{hold ? formatHold(snapshot.holdMs) : shown.reps}</strong>
+            <button type="button" onClick={switchCamera}>
+              <SwitchCamera aria-hidden="true" />
+              {facing === 'user' ? 'Back camera' : 'Front camera'}
+            </button>
+            {cameraOn && (
+              <button type="button" onClick={stopCamera}>
+                <CameraOff aria-hidden="true" />
+                Stop camera
+              </button>
+            )}
           </div>
 
           {cameraOn && (
-            <div className={`hud-pill ${snapshot.tracking && (!hold || snapshot.holding) ? 'ok' : ''}`}>{pill}</div>
+            <p className="setup">
+              <strong>Setup:</strong> {info.setup}
+            </p>
           )}
 
-          {timedBusy && (
-            <div className="hud-timer">
-              {setPhase === 'countdown' ? (secondsLeft > 0 ? secondsLeft : 'Go') : `${secondsLeft}s`}
-            </div>
+          {!hold && snapshot.angle !== null && cameraOn && (
+            <p className="meta">
+              Angle {snapshot.angle}° · needs {info.bottom}° or lower, back to {info.top}°
+            </p>
           )}
-
-          {message && <div className="hud-message">{message}</div>}
-
-          {!cameraOn && (
-            <div className="stage-empty">
-              {modelState === 'loading' && 'Loading the pose model…'}
-              {modelState === 'ready' && 'Start the camera to begin.'}
-              {modelState === 'failed' && 'The pose model could not load. Check your connection and reload.'}
-            </div>
-          )}
-        </div>
-
-        {error && <p className="error">{error}</p>}
-
-        <div className="controls">
-          {cameraOn ? (
-            <button type="button" className="secondary" onClick={stopCamera}>Stop camera</button>
-          ) : (
-            <button type="button" onClick={() => startCamera()} disabled={modelState !== 'ready'}>
-              Start camera
-            </button>
-          )}
-          <button type="button" className="secondary" onClick={switchCamera}>
-            {facing === 'user' ? 'Use back camera' : 'Use front camera'}
-          </button>
-          {timedBusy ? (
-            <button type="button" className="secondary" onClick={endTimedSet}>Stop set</button>
-          ) : (
-            !hold && (
-              <button type="button" onClick={startTimedSet} disabled={!cameraOn}>
-                Start {SET_SECONDS}s set
-              </button>
-            )
-          )}
-          {!timedBusy && (
-            <button type="button" onClick={saveFreeSet} disabled={!hasSomethingToSave(snapshot)}>
-              {hold ? 'Save hold' : 'Save set'}
-            </button>
-          )}
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => chooseExercise(exercise)}
-            disabled={timedBusy}
-          >
-            {hold ? 'Reset timer' : 'Reset count'}
-          </button>
-        </div>
-
-        {!hold && snapshot.angle !== null && cameraOn && (
-          <p className="meta">
-            Angle {snapshot.angle}° · needs {info.bottom}° or lower, back to {info.top}°
-          </p>
-        )}
-      </section>
-
-      {setPhase === 'done' && setResult && (
-        <section className="panel result">
-          <h2>Set complete</h2>
-          {setResult.beaten?.length > 0 && <p className="best">{bestMessage(setResult.beaten)}</p>}
-          {setResult.saved && <p className="meta">Saved to your workout.</p>}
-          <div className="result-grid">
-            <div><span>Reps counted</span><strong>{setResult.reps}</strong></div>
-            <div><span>Not counted</span><strong>{setResult.rejected.length}</strong></div>
-          </div>
-          {setResult.rejected.length > 0 && (
-            <ul className="reasons">
-              {[...new Set(setResult.rejected.map(item => item.reason))].map(reason => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          )}
-          <button type="button" onClick={startTimedSet}>Go again</button>
         </section>
-      )}
 
-      {log.current && (
-        <CurrentWorkout session={log.current} onFinish={finishWorkout} busy={timedBusy} />
-      )}
-
-      <section className="panel">
-        <h2>Record a set for tuning</h2>
-        <p className="sub">
-          Records the body tracking (not video) while you do a set, so the counter can be tested against real reps.
-          Count your reps yourself, then add that number to the file.
-        </p>
-        <div className="controls">
-          <button
-            type="button"
-            className={recording ? 'danger' : 'secondary'}
-            onClick={toggleRecording}
-            disabled={!cameraOn && !recording}
-          >
-            {recording ? 'Stop recording' : 'Start recording'}
-          </button>
-          {recordingFile && !recording && (
-            <a className="button-link" href={recordingFile.url} download={recordingFile.name}>
-              Download {recordingFile.name} ({recordingFile.sizeKb} KB)
-            </a>
+        <div className="workout-side">
+          {setPhase === 'done' && setResult && (
+            <section className="panel result">
+              <h2>Set complete</h2>
+              {setResult.beaten?.length > 0 && <p className="best">{bestMessage(setResult.beaten)}</p>}
+              {setResult.saved && <p className="meta">Saved to your workout.</p>}
+              <dl className="result-grid">
+                <div>
+                  <dt>Reps counted</dt>
+                  <dd>{setResult.reps}</dd>
+                </div>
+                <div>
+                  <dt>Not counted</dt>
+                  <dd>{setResult.rejected.length}</dd>
+                </div>
+              </dl>
+              {setResult.rejected.length > 0 && (
+                <ul className="reasons">
+                  {[...new Set(setResult.rejected.map(item => item.reason))].map(reason => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+              )}
+              <div className="controls">
+                <button type="button" className="primary" onClick={startTimedSet}>
+                  <Timer aria-hidden="true" />
+                  Go again
+                </button>
+              </div>
+            </section>
           )}
-        </div>
-        {recording && <p className="meta">Recording… do your set, then stop.</p>}
-      </section>
 
-      <footer className="meta">Pose tracking runs on this device. No video is uploaded.</footer>
+          {log.current ? (
+            <CurrentWorkout session={log.current} onFinish={finishWorkout} busy={timedBusy} />
+          ) : (
+            <section className="panel quiet">
+              <h2>Today's workout</h2>
+              <p className="sub">Saved sets show up here. Finish the workout when you're done to move it to History.</p>
+            </section>
+          )}
+
+          <details className="panel tuning">
+            <summary>
+              Record a set for tuning
+              <ChevronDown className="chev" aria-hidden="true" />
+            </summary>
+            <p className="sub">
+              Records the body tracking (not video) while you do a set, so the counter can be tested against real reps.
+              Count your reps yourself, then add that number to the file.
+            </p>
+            <div className="controls">
+              <button
+                type="button"
+                className={recording ? 'danger' : ''}
+                onClick={toggleRecording}
+                disabled={!cameraOn && !recording}
+              >
+                <Circle aria-hidden="true" />
+                {recording ? 'Stop recording' : 'Start recording'}
+              </button>
+              {recordingFile && !recording && (
+                <a className="button-link" href={recordingFile.url} download={recordingFile.name}>
+                  <Download aria-hidden="true" />
+                  Download {recordingFile.name} ({recordingFile.sizeKb} KB)
+                </a>
+              )}
+            </div>
+            {recording && <p className="meta">Recording… do your set, then stop.</p>}
+          </details>
+
+          <p className="meta privacy">Pose tracking runs on this device. No video is uploaded.</p>
+        </div>
+      </div>
     </main>
   );
 }
@@ -530,7 +612,10 @@ function CurrentWorkout({ session, onFinish, busy }) {
       </ol>
       <p className="meta">Clean reps: {formatPercent(summary.cleanRate)}</p>
       <div className="controls">
-        <button type="button" onClick={onFinish} disabled={busy}>Finish workout</button>
+        <button type="button" onClick={onFinish} disabled={busy}>
+          <Flag aria-hidden="true" />
+          Finish workout
+        </button>
       </div>
     </section>
   );

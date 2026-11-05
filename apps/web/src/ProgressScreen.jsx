@@ -10,6 +10,7 @@ import {
   weekStart,
   weeklyReps,
 } from '@pumpoff/core';
+import { Download, Upload } from 'lucide-react';
 import WeeklyChart from './WeeklyChart.jsx';
 import { formatHold, formatPercent, formatShortDate } from './format.js';
 
@@ -56,35 +57,39 @@ export default function ProgressScreen({ log, onReplaceLog }) {
 
   return (
     <main className="app">
-      <h1>Progress</h1>
+      <header className="page-head">
+        <h1>Progress</h1>
+      </header>
 
       {!hasSets ? (
         <section className="panel empty">
           <p>Your progress shows up here once you save your first set.</p>
         </section>
       ) : (
-        <>
-          <section className="tiles">
-            <div className="tile">
-              <span>Streak</span>
-              <strong>{streakDays(log, now)}</strong>
-              <small>days in a row</small>
-            </div>
-            <div className="tile">
-              <span>This week</span>
-              <strong>{repsThisWeek}</strong>
-              <small>
-                reps · {workoutsThisWeek} {workoutsThisWeek === 1 ? 'workout' : 'workouts'}
-              </small>
-            </div>
-            <div className="tile">
-              <span>Clean reps</span>
-              <strong>{formatPercent(cleanRepRate(log, now))}</strong>
-              <small>counted, last 30 days</small>
-            </div>
+        <div className="progress-grid">
+          <section className="panel overview" aria-label="Overview">
+            <dl className="stats">
+              <div>
+                <dt>Streak</dt>
+                <dd>{streakDays(log, now)}</dd>
+                <dd className="stat-note">days in a row</dd>
+              </div>
+              <div>
+                <dt>This week</dt>
+                <dd>{repsThisWeek}</dd>
+                <dd className="stat-note">
+                  reps · {workoutsThisWeek} {workoutsThisWeek === 1 ? 'workout' : 'workouts'}
+                </dd>
+              </div>
+              <div>
+                <dt>Clean reps</dt>
+                <dd>{formatPercent(cleanRepRate(log, now))}</dd>
+                <dd className="stat-note">counted, last 30 days</dd>
+              </div>
+            </dl>
           </section>
 
-          <section className="panel">
+          <section className="panel bests-panel">
             <h2>Personal bests</h2>
             <div className="bests">
               {Object.values(EXERCISES).map(exercise => {
@@ -146,12 +151,12 @@ export default function ProgressScreen({ log, onReplaceLog }) {
             </div>
           </section>
 
-          <section className="panel">
+          <section className="panel chart-panel">
             <h2>Per week</h2>
             <WeeklyChart weeks={weeklyReps(log, now, 8)} />
           </section>
 
-          <section className="panel">
+          <section className="panel mistakes-panel">
             <h2>What to work on</h2>
             {mistakes.length ? (
               <>
@@ -159,7 +164,7 @@ export default function ProgressScreen({ log, onReplaceLog }) {
                 <ol className="mistakes">
                   {mistakes.map(item => (
                     <li key={item.reason}>
-                      <span>{item.reason}</span>
+                      <span>{item.reason.charAt(0).toUpperCase() + item.reason.slice(1)}</span>
                       <strong>×{item.count}</strong>
                     </li>
                   ))}
@@ -169,20 +174,22 @@ export default function ProgressScreen({ log, onReplaceLog }) {
               <p className="sub">Every rep counted in the last 30 days. Clean form.</p>
             )}
           </section>
-        </>
+        </div>
       )}
 
-      <section className="panel">
+      <section className="panel backup">
         <h2>Backup</h2>
         <p className="sub">
           Workouts are saved in this browser only. Download a backup now and then, and restore it on a new phone or
           browser. Restoring adds workouts; it never deletes any.
         </p>
         <div className="controls">
-          <button type="button" className="secondary" onClick={exportLog} disabled={!allSessions.length}>
+          <button type="button" onClick={exportLog} disabled={!allSessions.length}>
+            <Download aria-hidden="true" />
             Download backup
           </button>
-          <button type="button" className="secondary" onClick={() => fileRef.current?.click()}>
+          <button type="button" onClick={() => fileRef.current?.click()}>
+            <Upload aria-hidden="true" />
             Restore from backup
           </button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={importLog} />

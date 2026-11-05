@@ -3,12 +3,14 @@ import { finishWorkout, logSet, newBests, deleteSession } from '@pumpoff/core';
 import RepCounterScreen from './RepCounterScreen.jsx';
 import HistoryScreen from './HistoryScreen.jsx';
 import ProgressScreen from './ProgressScreen.jsx';
+import { CalendarDays, ChartColumn, Dumbbell } from 'lucide-react';
+import AppearanceMenu from './AppearanceMenu.jsx';
 import { loadLog, requestPersistentStorage, saveLog } from './logStore.js';
 
 const TABS = [
-  { key: 'workout', label: 'Workout' },
-  { key: 'history', label: 'History' },
-  { key: 'progress', label: 'Progress' },
+  { key: 'workout', label: 'Workout', icon: Dumbbell },
+  { key: 'history', label: 'History', icon: CalendarDays },
+  { key: 'progress', label: 'Progress', icon: ChartColumn },
 ];
 
 const tabFromHash = () => {
@@ -58,20 +60,27 @@ export default function App() {
 
   return (
     <div className="shell">
-      <nav className="tabs" aria-label="Sections">
+      <header className="topbar">
         <span className="brand">PumpOff</span>
-        {TABS.map(item => (
-          <button
-            key={item.key}
-            type="button"
-            className={tab === item.key ? 'active' : ''}
-            aria-current={tab === item.key ? 'page' : undefined}
-            onClick={() => go(item.key)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+        <nav className="tabs" aria-label="Sections">
+          {TABS.map(item => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                className={tab === item.key ? 'active' : ''}
+                aria-current={tab === item.key ? 'page' : undefined}
+                onClick={() => go(item.key)}
+              >
+                <Icon aria-hidden="true" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+        <AppearanceMenu />
+      </header>
 
       {saveFailed && (
         <p className="banner">

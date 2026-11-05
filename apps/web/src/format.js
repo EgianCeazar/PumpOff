@@ -35,8 +35,8 @@ export function describeSet(set) {
   if (set.holdMs !== null && set.holdMs !== undefined) {
     return `${exerciseName(set.exercise)} · ${formatHold(set.holdMs)} hold`;
   }
-  const kind = set.mode === 'timed' ? `${set.seconds}s set` : 'set';
-  return `${exerciseName(set.exercise)} · ${kind} · ${set.reps} reps`;
+  const timed = set.mode === 'timed' ? ` · ${set.seconds}s set` : '';
+  return `${exerciseName(set.exercise)}${timed} · ${set.reps} reps`;
 }
 
 export function describeMistakes(reasons = {}) {

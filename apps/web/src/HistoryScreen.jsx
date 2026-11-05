@@ -1,3 +1,4 @@
+import { ChevronDown, Trash } from 'lucide-react';
 import { sessionSummary } from '@pumpoff/core';
 import {
   describeMistakes,
@@ -16,7 +17,9 @@ export default function HistoryScreen({ log, onDeleteSession }) {
   if (!sessions.length) {
     return (
       <main className="app">
-        <h1>History</h1>
+        <header className="page-head">
+          <h1>History</h1>
+        </header>
         <section className="panel empty">
           <p>No workouts yet. Save a set on the Workout screen and it shows up here.</p>
         </section>
@@ -32,58 +35,67 @@ export default function HistoryScreen({ log, onDeleteSession }) {
 
   return (
     <main className="app">
-      <h1>History</h1>
-      <p className="sub">Saved on this device. Back it up from the Progress screen.</p>
-      {sessions.map(session => {
-        const summary = sessionSummary(session);
-        return (
-          <section key={session.id} className="panel workout-card">
-            <div className="panel-head">
-              <h2>
-                {formatDay(session.startedAt)}
-                {session.inProgress && <span className="tag">In progress</span>}
-              </h2>
-              <span className="meta">
-                {formatTime(session.startedAt)} · {formatDuration(summary.durationMs)}
-              </span>
-            </div>
-            <div className="totals">
-              {Object.entries(summary.byExercise).map(([key, entry]) => (
-                <div key={key}>
-                  <strong>{entry.holdMs > 0 ? formatHold(entry.holdMs) : entry.reps}</strong>
-                  <span>
-                    {exerciseName(key)} · {entry.sets} {entry.sets === 1 ? 'set' : 'sets'}
+      <header className="page-head">
+        <h1>History</h1>
+        <p className="sub">Saved on this device. Back it up from the Progress screen.</p>
+      </header>
+      <div className="history-list">
+        {sessions.map(session => {
+          const summary = sessionSummary(session);
+          return (
+            <section key={session.id} className="panel workout-card">
+              <div className="panel-head">
+                <h2>{formatDay(session.startedAt)}</h2>
+                {session.inProgress ? (
+                  <span className="tag">In progress</span>
+                ) : (
+                  <span className="meta">
+                    {formatTime(session.startedAt)} · {formatDuration(summary.durationMs)}
                   </span>
-                </div>
-              ))}
-              <div>
-                <strong>{formatPercent(summary.cleanRate)}</strong>
-                <span>Clean reps</span>
+                )}
               </div>
-            </div>
-            <details>
-              <summary>Sets</summary>
-              <ol className="set-list">
-                {session.sets.map(set => (
-                  <li key={set.id}>
-                    <span>{describeSet(set)}</span>
-                    {set.notCounted > 0 && (
-                      <small>
-                        {set.notCounted} not counted: {describeMistakes(set.notCountedReasons)}
-                      </small>
-                    )}
-                  </li>
+              <dl className="totals">
+                {Object.entries(summary.byExercise).map(([key, entry]) => (
+                  <div key={key}>
+                    <dt>
+                      {exerciseName(key)} · {entry.sets} {entry.sets === 1 ? 'set' : 'sets'}
+                    </dt>
+                    <dd>{entry.holdMs > 0 ? formatHold(entry.holdMs) : entry.reps}</dd>
+                  </div>
                 ))}
-              </ol>
-              {!session.inProgress && (
-                <button type="button" className="link danger-text" onClick={() => remove(session)}>
-                  Delete workout
-                </button>
-              )}
-            </details>
-          </section>
-        );
-      })}
+                <div>
+                  <dt>Clean reps</dt>
+                  <dd>{formatPercent(summary.cleanRate)}</dd>
+                </div>
+              </dl>
+              <details>
+                <summary>
+                  Sets
+                  <ChevronDown className="chev" aria-hidden="true" />
+                </summary>
+                <ol className="set-list">
+                  {session.sets.map(set => (
+                    <li key={set.id}>
+                      <span>{describeSet(set)}</span>
+                      {set.notCounted > 0 && (
+                        <small>
+                          {set.notCounted} not counted: {describeMistakes(set.notCountedReasons)}
+                        </small>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+                {!session.inProgress && (
+                  <button type="button" className="link danger-text" onClick={() => remove(session)}>
+                    <Trash aria-hidden="true" />
+                    Delete workout
+                  </button>
+                )}
+              </details>
+            </section>
+          );
+        })}
+      </div>
     </main>
   );
 }

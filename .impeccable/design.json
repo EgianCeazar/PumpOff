@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T00:00:00Z",
+  "title": "Design System: PumpOff",
+  "extensions": {
+    "colorMeta": {
+      "act-tomato": { "role": "primary", "displayName": "Tomato (default action)", "canonical": "oklch(55.5% 0.171 36)", "cssVar": "--act", "tonalRamp": ["#230000", "#4a0400", "#741a00", "#a2310c", "#ca512f", "#e57d60", "#ffab93", "#ffddca"] },
+      "act-teal": { "role": "primary", "displayName": "Teal (action alternate)", "canonical": "oklch(51.1% 0.086 186)", "cssVar": "--act", "tonalRamp": ["#00100e", "#002c28", "#004b45", "#156c64", "#398d85", "#6bada5", "#9cd0c9", "#d2f8f2"] },
+      "act-blue": { "role": "primary", "displayName": "Blue (action alternate)", "canonical": "oklch(49.1% 0.188 262)", "cssVar": "--act", "tonalRamp": ["#00042e", "#031d5a", "#133889", "#2555bc", "#4176e5", "#6c9cfb", "#9bc4ff", "#d0efff"] },
+      "act-berry": { "role": "primary", "displayName": "Berry (action alternate)", "canonical": "oklch(52.1% 0.171 357)", "cssVar": "--act", "tonalRamp": ["#21000b", "#470224", "#701640", "#9d2c5e", "#c44c7e", "#e0789f", "#fda6c5", "#ffd9ef"] },
+      "dark-act-tomato": { "role": "primary", "displayName": "Tomato, dark theme", "cssVar": "--act" },
+      "dark-act-teal": { "role": "primary", "displayName": "Teal, dark theme", "cssVar": "--act" },
+      "dark-act-blue": { "role": "primary", "displayName": "Blue, dark theme", "cssVar": "--act" },
+      "dark-act-berry": { "role": "primary", "displayName": "Berry, dark theme", "cssVar": "--act" },
+      "contrast-act-tomato": { "role": "primary", "displayName": "Tomato, high contrast", "cssVar": "--act" },
+      "contrast-act-teal": { "role": "primary", "displayName": "Teal, high contrast", "cssVar": "--act" },
+      "contrast-act-blue": { "role": "primary", "displayName": "Blue, high contrast", "cssVar": "--act" },
+      "contrast-act-berry": { "role": "primary", "displayName": "Berry, high contrast", "cssVar": "--act" },
+      "on-act-light": { "role": "primary", "displayName": "Text on action (light)", "cssVar": "--on-act" },
+      "dark-on-act-tomato": { "role": "primary", "displayName": "Text on tomato (dark)", "cssVar": "--on-act" },
+      "dark-on-act-teal": { "role": "primary", "displayName": "Text on teal (dark)", "cssVar": "--on-act" },
+      "dark-on-act-blue": { "role": "primary", "displayName": "Text on blue (dark)", "cssVar": "--on-act" },
+      "dark-on-act-berry": { "role": "primary", "displayName": "Text on berry (dark)", "cssVar": "--on-act" },
+      "contrast-on-act": { "role": "primary", "displayName": "Text on action (high contrast)", "cssVar": "--on-act" },
+      "cream-ground": { "role": "neutral", "displayName": "Cream Ground", "canonical": "oklch(95.7% 0.012 79)", "cssVar": "--bg", "tonalRamp": ["#0c0b09", "#262420", "#423f3a", "#615d57", "#817d76", "#a19e98", "#c7c4bf", "#f0eeea"] },
+      "card-white": { "role": "neutral", "displayName": "Card White", "cssVar": "--card" },
+      "oat-fill": { "role": "neutral", "displayName": "Oat Fill", "cssVar": "--fill" },
+      "oat-fill-strong": { "role": "neutral", "displayName": "Oat Fill Strong", "cssVar": "--fill-strong" },
+      "warm-hairline": { "role": "neutral", "displayName": "Warm Hairline", "canonical": "oklch(89.0% 0.021 74)", "cssVar": "--line", "tonalRamp": ["#0e0b07", "#28231d", "#453f37", "#645c52", "#847c71", "#a59d93", "#c9c3bb", "#f2eee8"] },
+      "espresso-ink": { "role": "neutral", "displayName": "Espresso Ink", "canonical": "oklch(26.6% 0.012 55)", "cssVar": "--ink", "tonalRamp": ["#0d0b09", "#272321", "#443f3b", "#635c58", "#837c77", "#a39d99", "#c8c3c0", "#f1eeeb"] },
+      "walnut-ink-2": { "role": "neutral", "displayName": "Walnut Ink 2", "cssVar": "--ink-2" },
+      "hud-glass": { "role": "neutral", "displayName": "HUD Glass", "cssVar": "--hud-bg" },
+      "stage-dark": { "role": "neutral", "displayName": "Stage Dark", "cssVar": "--stage" },
+      "ok-green": { "role": "state", "displayName": "Ok Green", "canonical": "oklch(51.7% 0.118 147)", "cssVar": "--ok", "tonalRamp": ["#001101", "#032d0d", "#174c22", "#2c6e38", "#4a8f55", "#75af7d", "#a4d2a9", "#d7f9da"] },
+      "warn-amber": { "role": "state", "displayName": "Warn Amber", "canonical": "oklch(50.8% 0.108 73)", "cssVar": "--warn", "tonalRamp": ["#170700", "#361e00", "#593800", "#7e540b", "#a2732f", "#bf9661", "#dfbe93", "#ffeacb"] },
+      "dark-ground": { "role": "neutral", "displayName": "Dark Ground", "canonical": "oklch(19.8% 0.008 67)", "cssVar": "--bg", "theme": "dark", "tonalRamp": ["#0c0b0a", "#262422", "#423f3d", "#605d5a", "#807c79", "#a19e9a", "#c6c3c1", "#f0eeec"] },
+      "contrast-ground": { "role": "neutral", "displayName": "High Contrast Black", "cssVar": "--bg", "theme": "contrast" }
+    },
+    "themes": [
+      { "name": "light", "selector": "[data-theme='light'], :root", "borderWidth": "1px" },
+      { "name": "dark", "selector": "[data-theme='dark']", "borderWidth": "1px" },
+      { "name": "contrast", "selector": "[data-theme='contrast']", "borderWidth": "2px" }
+    ],
+    "accents": {
+      "selector": "[data-accent='tomato' | 'teal' | 'blue' | 'berry']",
+      "default": "tomato",
+      "storageKey": "pumpoff.appearance.v1",
+      "note": "Theme 'auto' follows prefers-color-scheme; index.html applies the saved choice before first paint."
+    },
+    "typographyMeta": {
+      "hud-count": { "displayName": "HUD count", "purpose": "The live rep count on the camera card, read from 2 m." },
+      "stat": { "displayName": "Stat", "purpose": "Streak, weekly total and clean-rate on Progress." },
+      "figure": { "displayName": "Figure", "purpose": "Set results and history totals (1.9rem in totals)." },
+      "headline": { "displayName": "Headline", "purpose": "Screen titles (h1)." },
+      "brand": { "displayName": "Brand", "purpose": "The PumpOff wordmark in the top bar." },
+      "title": { "displayName": "Title", "purpose": "Panel headings (h2)." },
+      "coach-line": { "displayName": "Coach line", "purpose": "The coach message on the camera card." },
+      "body": { "displayName": "Body", "purpose": "Running text; intro copy capped at 65ch." },
+      "button": { "displayName": "Button", "purpose": "All buttons; primary at weight 750." },
+      "meta": { "displayName": "Meta", "purpose": "Secondary notes in ink-2." },
+      "label": { "displayName": "Label", "purpose": "Tab labels, pills, tags, captions beneath figures. Sentence case." }
+    },
+    "shadows": [
+      { "name": "selection-ring", "value": "inset 0 0 0 1px var(--ink)", "purpose": "Thickens the border of a checked appearance option. Not elevation." },
+      { "name": "active-tab-ring", "value": "inset 0 0 0 var(--bw) var(--line)", "purpose": "Hairline outline on the active desktop tab pill. Not elevation." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The only easing curve; ease-out for every state change." },
+      { "name": "press", "value": "transform 120ms", "purpose": "Buttons scale to 0.97 while pressed." },
+      { "name": "colour-change", "value": "160ms", "purpose": "Background, border and colour transitions on buttons, tabs and chart bars." },
+      { "name": "panel-in", "value": "180ms, opacity 0 and translateY(-4px) to rest", "purpose": "Appearance panel opening." },
+      { "name": "message-in", "value": "220ms, opacity 0 and translateY(6px) to rest", "purpose": "A new coach message." },
+      { "name": "count-in", "value": "260ms, scale 0.88 and opacity 0.4 to rest", "purpose": "Each new rep count." },
+      { "name": "reduced-motion", "value": "animation and transition: none", "purpose": "Applied under prefers-reduced-motion: reduce." }
+    ],
+    "breakpoints": [
+      { "name": "small-phone", "value": "max-width: 380px" },
+      { "name": "phone", "value": "max-width: 759px" },
+      { "name": "wide", "value": "min-width: 760px" },
+      { "name": "desktop", "value": "min-width: 1040px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one action-coloured button per moment, such as Save set.",
+      "html": "<button class=\"ds-btn ds-btn-primary\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>Save set</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 18px; border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 16px; background: var(--card, #ffffff); color: var(--ink, #2a2420); font-family: 'Figtree Variable', 'Figtree', sans-serif; font-size: 1rem; font-weight: 650; cursor: pointer; transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), border-color 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn:active { transform: scale(0.97); } .ds-btn:focus-visible { outline: 3px solid var(--act, #c2421b); outline-offset: 2px; } .ds-btn-primary { background: var(--act, #c2421b); border-color: var(--act, #c2421b); color: var(--on-act, #ffffff); font-weight: 750; } .ds-btn-primary:hover { filter: brightness(1.06); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Every non-primary action: white card with a warm hairline.",
+      "html": "<button class=\"ds-btn-secondary\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></svg>Reset</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 18px; border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 16px; background: var(--card, #ffffff); color: var(--ink, #2a2420); font-family: 'Figtree Variable', 'Figtree', sans-serif; font-size: 1rem; font-weight: 650; cursor: pointer; transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), border-color 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-secondary:hover { border-color: var(--fill-strong, #ddd2c4); } .ds-btn-secondary:active { transform: scale(0.97); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--act, #c2421b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive actions in warn amber, never the action colour.",
+      "html": "<button class=\"ds-btn-danger\">Delete workout</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 18px; border: var(--bw, 1px) solid var(--warn, #8a5a00); border-radius: 16px; background: var(--card, #ffffff); color: var(--warn, #8a5a00); font-family: 'Figtree Variable', 'Figtree', sans-serif; font-size: 1rem; font-weight: 650; cursor: pointer; transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-danger:active { transform: scale(0.97); } .ds-btn-danger:focus-visible { outline: 3px solid var(--act, #c2421b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Exercise Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill choices for the exercise; the selected one fills with ink, not accent.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-active\">Push-ups</button><button class=\"ds-chip\">Squats</button><button class=\"ds-chip\">Plank</button></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { min-height: 44px; padding: 8px 16px; border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 999px; background: var(--card, #ffffff); color: var(--ink, #2a2420); font-family: 'Figtree Variable', 'Figtree', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), border-color 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip:hover { border-color: var(--fill-strong, #ddd2c4); } .ds-chip:focus-visible { outline: 3px solid var(--act, #c2421b); outline-offset: 2px; } .ds-chip-active, .ds-chip-active:hover { background: var(--ink, #2a2420); border-color: var(--ink, #2a2420); color: var(--bg, #f5f0e8); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The flat white container with a warm hairline used on every screen.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-head\"><h2>Today</h2><span class=\"ds-tag\">3 sets</span></div><dl class=\"ds-totals\"><div><dt>Clean reps</dt><dd>42</dd></div><div><dt>Rejected</dt><dd>5</dd></div></dl></section>",
+      "css": ".ds-panel { display: grid; gap: 12px; padding: 18px; background: var(--card, #ffffff); color: var(--ink, #2a2420); border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 22px; font-family: 'Figtree Variable', 'Figtree', sans-serif; font-variant-numeric: tabular-nums; } .ds-panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; } .ds-panel h2 { margin: 0; font-family: 'Gabarito Variable', 'Gabarito', sans-serif; font-weight: 800; font-size: 1.2rem; line-height: 1.2; } .ds-tag { padding: 3px 10px; border-radius: 999px; background: var(--fill, #ede5da); font-size: 0.8rem; font-weight: 700; } .ds-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin: 0; } .ds-totals div { display: flex; flex-direction: column-reverse; } .ds-totals dt { color: var(--ink-2, #665b52); font-size: 0.85rem; } .ds-totals dd { margin: 0; font-family: 'Gabarito Variable', 'Gabarito', sans-serif; font-size: 1.9rem; font-weight: 800; line-height: 1.05; }"
+    },
+    {
+      "name": "Appearance Option",
+      "kind": "input",
+      "refersTo": "option",
+      "description": "Radio tile used for theme and accent choices.",
+      "html": "<div class=\"ds-options\"><label class=\"ds-option\"><input type=\"radio\" name=\"ds-accent\" checked><span class=\"ds-swatch\" style=\"background:#c2421b\"></span>Tomato</label><label class=\"ds-option\"><input type=\"radio\" name=\"ds-accent\"><span class=\"ds-swatch\" style=\"background:#0f766e\"></span>Teal</label></div>",
+      "css": ".ds-options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .ds-option { position: relative; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 12px; background: var(--card, #ffffff); color: var(--ink, #2a2420); font-family: 'Figtree Variable', 'Figtree', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; } .ds-option input { position: absolute; opacity: 0; pointer-events: none; } .ds-option:has(input:checked) { border-color: var(--ink, #2a2420); background: var(--fill, #ede5da); box-shadow: inset 0 0 0 1px var(--ink, #2a2420); } .ds-option:has(input:focus-visible) { outline: 3px solid var(--act, #c2421b); outline-offset: 2px; } .ds-swatch { width: 18px; height: 18px; border-radius: 999px; flex: none; }"
+    },
+    {
+      "name": "Bottom Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab-bar",
+      "description": "Phone navigation within thumb reach; the active tab takes the action colour.",
+      "html": "<nav class=\"ds-tabs\"><button class=\"ds-tab ds-tab-active\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.4 14.4 9.6 9.6\"/><path d=\"M18.66 21.51a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.37-6.37a2 2 0 1 1 2.83 2.83l-1.77 1.77a2 2 0 1 1 2.83 2.83z\"/><path d=\"m21.5 21.5-1.4-1.4\"/><path d=\"M3.9 3.9 2.5 2.5\"/><path d=\"M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z\"/></svg>Workout</button><button class=\"ds-tab\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/></svg>History</button><button class=\"ds-tab\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3v16a2 2 0 0 0 2 2h16\"/><path d=\"M18 17V9\"/><path d=\"M13 17V5\"/><path d=\"M8 17v-3\"/></svg>Progress</button></nav>",
+      "css": ".ds-tabs { display: grid; grid-template-columns: repeat(3, 1fr); height: 68px; background: var(--card, #ffffff); border-top: var(--bw, 1px) solid var(--line, #e3d9cc); font-family: 'Figtree Variable', 'Figtree', sans-serif; } .ds-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px 4px; border: 0; background: none; color: var(--ink-2, #665b52); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: color 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-tab:hover { color: var(--ink, #2a2420); } .ds-tab:focus-visible { outline: 3px solid var(--act, #c2421b); outline-offset: -3px; } .ds-tab-active, .ds-tab-active:hover { color: var(--act, #c2421b); font-weight: 700; }"
+    },
+    {
+      "name": "Camera Stage HUD",
+      "kind": "custom",
+      "refersTo": "camera-stage",
+      "description": "Signature: the dark camera card with the big count, tracking pill and coach message.",
+      "html": "<div class=\"ds-stage\"><div class=\"ds-hud-count\"><strong>12</strong><span>reps</span></div><div class=\"ds-hud-pill\"><span class=\"ds-dot\"></span>Tracking</div><div class=\"ds-hud-message\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 8v4\"/><path d=\"M12 16h.01\"/></svg>Not counted: go lower</div></div>",
+      "css": ".ds-stage { position: relative; height: 420px; background: var(--stage, #2c2622); border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 22px; overflow: hidden; font-family: 'Figtree Variable', 'Figtree', sans-serif; font-variant-numeric: tabular-nums; } .ds-hud-count { position: absolute; left: 12px; top: 12px; padding: 8px 18px 12px; background: var(--hud-bg, rgba(255,255,255,0.94)); color: var(--ink, #2a2420); border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 20px; } .ds-hud-count strong { display: block; font-family: 'Gabarito Variable', 'Gabarito', sans-serif; font-weight: 900; font-size: 6rem; line-height: 1; letter-spacing: -0.03em; } .ds-hud-count span { font-size: 0.9rem; font-weight: 600; color: var(--ink-2, #665b52); } .ds-hud-pill { position: absolute; right: 12px; top: 12px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--hud-bg, rgba(255,255,255,0.94)); color: var(--ink, #2a2420); border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 999px; font-size: 0.85rem; font-weight: 650; } .ds-dot { width: 10px; height: 10px; border-radius: 999px; background: var(--ok, #2f7a3e); } .ds-hud-message { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--hud-bg, rgba(255,255,255,0.94)); color: var(--ink, #2a2420); border: var(--bw, 1px) solid var(--line, #e3d9cc); border-radius: 16px; font-size: 1.2rem; font-weight: 700; line-height: 1.25; } .ds-hud-message svg { color: var(--warn, #8a5a00); flex: none; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Kitchen-Table Coach",
+    "overview": "PumpOff looks like a friendly training notebook left open on a warm table: cream paper, white cards edged with a thin warm hairline, chunky rounded numerals, and exactly one bright colour that always means \"press here\". It refuses the dark-ground, neon-accent gym-app default and the grey-tiles dashboard. The mood is warm, plain and direct, like the coach's voice in PRODUCT.md.\n\nDensity follows distance. On the Workout screen the camera card owns most of the phone and the count sits in a huge pill readable from 2 m; History and Progress are read up close, so they tighten into panels of tabular figures. Depth comes from tone and hairlines, never shadows. Three themes (light, dark, high contrast) share one warm neutral ramp structure, and the person picks one of four action colours (tomato by default, teal, blue, berry) that is re-tuned per theme for contrast.\n\nEverything is thumb-first: 44–56 px targets, a bottom tab bar on phones, and one action-coloured button per moment. Motion is short, eased out, and only acknowledges a state change.",
+    "keyCharacteristics": [
+      "Warm single-tint neutral ramp per theme; no cool greys.",
+      "One user-picked action colour on pressable things; state colours (ok green, warn amber) kept separate.",
+      "Gabarito for headings and big numerals, Figtree for everything else, tabular numbers everywhere.",
+      "Flat surfaces separated by 1 px warm hairlines (2 px in high contrast); no drop shadows.",
+      "Generous, soft radii (12 / 16 / 22 px) and full pills for chips, tabs and HUD.",
+      "Lucide line icons at one stroke weight (2, 2.4 for the active tab)."
+    ],
+    "rules": [
+      { "name": "The Press-Here Rule", "body": "The action colour appears only on things you can press or are pressing (primary button, active tab, focus ring, link underline, selection). It is never a heading colour, chart colour or decoration.", "section": "colors" },
+      { "name": "The One Bright Button Rule", "body": "Each moment has at most one action-coloured button; every other button is card-white with a hairline border.", "section": "colors" },
+      { "name": "The Separate State Rule", "body": "Ok and warn are their own colours. A counted rep is green, a rejected rep is amber; neither borrows the accent.", "section": "colors" },
+      { "name": "The Ink Selection Rule", "body": "Selected choices that are not an action (the active exercise chip, a checked appearance option) are marked in ink, not accent: chips fill with espresso ink, options get an ink border plus oat fill.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "`font-variant-numeric: tabular-nums` is set on the root and on chart axes; every number lines up and can be compared.", "section": "typography" },
+      { "name": "The Caption-Below Rule", "body": "Figures lead and their label sits beneath in smaller ink-2 text (the markup keeps dt before dd; layout reverses the order).", "section": "typography" },
+      { "name": "The Sentence-Case Rule", "body": "No uppercase labels and no wide tracking anywhere; letter-spacing is only ever negative, on Gabarito display sizes.", "section": "typography" },
+      { "name": "The Hairline Rule", "body": "Separate with a 1 px warm line or a tone step, never a drop shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** keep the action colour on pressable things only, one action-coloured button per moment.",
+      "**Do** take every surface colour from the theme tokens so light, dark and high contrast all work; check new UI in all three and with all four accents.",
+      "**Do** set big live numbers in Gabarito 800–900 on a near-opaque glass card over the camera feed, readable from 2 m.",
+      "**Do** use Lucide line icons at stroke 2 (24 px in tabs, 20 px inline).",
+      "**Do** keep touch targets at least 44 px (48 px for buttons).",
+      "**Do** animate only state changes with the shared ease-out curve (cubic-bezier(0.16, 1, 0.3, 1)) in 120–260 ms, and drop all motion under reduced-motion.",
+      "**Do** write labels and headings in sentence case."
+    ],
+    "donts": [
+      "**Don't** use Inter, Roboto, Arial or default system stacks; the pairing is Gabarito plus Figtree.",
+      "**Don't** use purple-to-indigo gradients, cool greys, or more than one accent on a screen.",
+      "**Don't** add drop shadows, shadow-heavy cards, glows, blobs or glowing orbs.",
+      "**Don't** use emoji as icons, or mix icon sets and stroke weights.",
+      "**Don't** add wide-tracked ALL-CAPS micro-labels.",
+      "**Don't** use `transition-all` or bouncy, looping animation.",
+      "**Don't** build the generic hero → 3 cards → testimonials layout or a grey-tile dashboard.",
+      "**Don't** colour state (counted, rejected, error) with the action colour, or decorate with it."
+    ]
+  }
+}

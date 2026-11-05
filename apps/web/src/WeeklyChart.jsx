@@ -1,12 +1,12 @@
 import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { EXERCISES } from '@pumpoff/core';
 import { formatHold, formatShortDate } from './format.js';
 
 // One exercise per week as bars, picked with the buttons above the chart.
 // One exercise at a time keeps a single honest axis: reps and plank
-// minutes never share a scale. The color is validated categorical slot 1
-// for the dark surface.
-const BAR = '#3987e5';
+// minutes never share a scale. Bar colours come from the theme in
+// styles.css: past weeks in a quiet tone, the current week in full ink.
 
 const W = 640;
 const H = 220;
@@ -96,7 +96,7 @@ export default function WeeklyChart({ weeks }) {
                 {value > 0 && (
                   <path
                     d={barPath(x, y(value), barW, y(0) - y(value))}
-                    fill={BAR}
+                    className={i === weeks.length - 1 ? 'bar current' : 'bar'}
                     opacity={hover && !active ? 0.55 : 1}
                   />
                 )}
@@ -127,7 +127,10 @@ export default function WeeklyChart({ weeks }) {
         )}
       </div>
       <details>
-        <summary>Show as table</summary>
+        <summary>
+          Show as table
+          <ChevronDown className="chev" aria-hidden="true" />
+        </summary>
         <table>
           <thead>
             <tr>
