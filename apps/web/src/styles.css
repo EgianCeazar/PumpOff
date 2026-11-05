@@ -70,3 +70,76 @@ footer { margin-top: 24px; text-align: center; }
   .stage { aspect-ratio: 3 / 4; }
   .hud-pill { font-size: .65rem; }
 }
+
+/* ---------------- app shell and tabs ---------------- */
+.shell { min-height: 100vh; }
+.tabs { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 4px; padding: 10px 16px; background: #0b0f1aee; border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); overflow-x: auto; }
+.tabs .brand { margin-right: auto; color: var(--accent); font-weight: 900; letter-spacing: -.02em; font-size: 1.1rem; }
+.tabs button { padding: 8px 12px; background: transparent; color: var(--muted); }
+.tabs button.active { background: #222c40; color: var(--text); }
+.banner { margin: 0; padding: 10px 16px; background: #431407; color: #fed7aa; font-size: .9rem; }
+
+/* ---------------- shared bits ---------------- */
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 8px; }
+.panel-head h2 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.tag { padding: 2px 8px; border-radius: 999px; background: #1a2e05; color: #d9f99d; font-size: .7rem; font-weight: 700; }
+.empty p { margin: 0; color: var(--muted); }
+.best { margin: 0 0 6px; color: var(--accent); font-weight: 800; font-size: 1.1rem; }
+button.link { padding: 0; background: none; font-weight: 700; }
+.danger-text { color: #fca5a5; }
+details { margin-top: 10px; }
+summary { cursor: pointer; color: var(--muted); font-weight: 700; }
+
+.set-list { margin: 8px 0; padding-left: 20px; display: grid; gap: 6px; }
+.set-list li span { display: block; }
+.set-list small { display: block; color: var(--muted); }
+
+.totals { display: flex; flex-wrap: wrap; gap: 8px; }
+.totals > div { flex: 1 1 120px; padding: 10px 12px; background: var(--bg); border-radius: 12px; }
+.totals strong { display: block; font-size: 1.5rem; color: var(--text); font-variant-numeric: tabular-nums; }
+.totals span { color: var(--muted); font-size: .8rem; }
+
+/* ---------------- progress ---------------- */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.tile { padding: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; min-width: 0; }
+.tile span { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; }
+.tile strong { display: block; font-size: 2rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tile small { color: var(--muted); }
+
+.bests { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.best-card { padding: 12px; background: var(--bg); border-radius: 12px; }
+.best-card h3 { margin: 0 0 8px; font-size: 1rem; }
+.best-card dl { margin: 0; display: grid; gap: 6px; }
+.best-card dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.best-card dt { color: var(--muted); font-size: .85rem; }
+.best-card dd { margin: 0; }
+.best-card dd strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.best-card dd small { color: var(--muted); }
+
+.mistakes { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.mistakes li { display: list-item; }
+.mistakes li span { margin-right: 8px; }
+.mistakes li strong { color: var(--muted); }
+
+/* ---------------- chart ---------------- */
+.chart { margin: 0; }
+.legend { display: flex; gap: 14px; margin-bottom: 6px; color: var(--muted); font-size: .85rem; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; }
+.chart-wrap { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart .grid { stroke: #273249; stroke-width: 1; }
+.chart .baseline { stroke: #4b5870; stroke-width: 1; }
+.chart .axis { fill: var(--muted); font-size: 11px; }
+.tooltip { position: absolute; transform: translate(-50%, calc(-100% - 8px)); padding: 6px 10px; background: #0b0f1a; border: 1px solid var(--line); border-radius: 8px; white-space: nowrap; pointer-events: none; font-size: .85rem; }
+.tooltip span { display: block; color: var(--muted); font-size: .75rem; }
+.chart table { width: 100%; margin-top: 8px; border-collapse: collapse; font-size: .9rem; }
+.chart th, .chart td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); }
+.chart th { color: var(--muted); font-weight: 700; }
+.chart td:not(:first-child), .chart th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 520px) {
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .tiles .tile:last-child { grid-column: 1 / -1; }
+  .bests { grid-template-columns: 1fr; }
+  .tile strong { font-size: 1.6rem; }
+}
