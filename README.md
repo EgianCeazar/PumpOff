@@ -38,10 +38,11 @@ PumpOff/
 
 1. **Web rep counter prototype**: push-ups, squats, lunges, sit-ups and plank, tuned with recorded sets. *(built, needs tuning with real sets)*
 2. **Solo tracking**: workouts saved offline on the device, history, personal bests, weekly reps, streaks, form feedback, backup. *(built)*
-3. **Android MVP**: one exercise, friend battle by invite link with live video, result screen, sign-in.
-4. **Leaderboards**: match history, friends and weekly boards.
-5. **Ranked play**: Elo, matchmaking, server-side rep verification.
-6. **Polish and growth**: more exercises, seasons, badges, iOS.
+3. **Web 1v1 battles**: room code or invite link, live peer-to-peer video, synced countdown, live counts, result and rematch, set saved to your log. *(built; online needs the Supabase settings below)*
+4. **Android MVP**: the tracker and battles as an Expo app, sign-in.
+5. **Leaderboards**: match history, friends and weekly boards.
+6. **Ranked play**: Elo, matchmaking, server-side rep verification.
+7. **Polish and growth**: more exercises, seasons, badges, iOS.
 
 ## Development
 
@@ -78,3 +79,13 @@ Use **Record a set for tuning** in the web app, then follow `packages/core/test/
 ## How rep counting works
 
 `@pumpoff/core` tracks one joint angle per exercise (elbow for push-ups, knee for squats) using the side of the body facing the camera. A rep counts when the angle drops from the top position, reaches the required depth, and returns to the top. Reps that are too shallow, too fast, or break a form rule are rejected with a reason.
+
+## Online battles setup
+
+Battles use a free [Supabase](https://supabase.com) project for finding each other (Realtime); video goes directly between the two phones.
+
+1. In the Supabase project, open **Project Settings → API** and copy the **Project URL** and the **anon / publishable key**. Both are public by design. Never use the `service_role` or secret key here.
+2. In GitHub, add them as repository **variables** (Settings → Secrets and variables → Actions → Variables) named `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The next deploy picks them up.
+3. For local development, copy `apps/web/.env.example` to `apps/web/.env.local` and fill in the same values.
+
+Without these, the Battle tab runs in test mode: it connects two tabs of the same browser, which is handy for trying the flow on one computer.
