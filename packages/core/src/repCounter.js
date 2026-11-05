@@ -86,12 +86,18 @@ export const EXERCISES = {
     lowerCue: 'Go lower: bend your elbows to about 90°.',
     plausible: (p, s) => {
       const shoulder = p[s.shoulder];
+      const elbow = p[s.elbow];
+      const wrist = p[s.wrist];
       const ankle = p[s.ankle];
+      const upperArm = distance(shoulder, elbow);
       // A push-up body runs roughly horizontally across the frame.
       const horizontal = Math.abs(shoulder.y - ankle.y) < Math.abs(shoulder.x - ankle.x);
+      // Hands are on the floor, below the shoulders (image y grows
+      // downward). A small allowance covers the bottom of a deep rep.
+      // Pushing the arms out while standing or sitting fails this.
+      const handsDown = wrist.y > shoulder.y - upperArm * 0.25;
       return (
-        horizontal &&
-        inProportion(distance(shoulder, p[s.elbow]), distance(p[s.elbow], p[s.wrist]))
+        horizontal && handsDown && inProportion(upperArm, distance(elbow, wrist))
       );
     },
     form: (p, s) => {
@@ -165,23 +171,39 @@ function sideVisibility(p, side, joints) {
   return total / joints.length;
 }
 
+// The pose model guesses joints it can't see, often outside the image.
+// A guessed joint can't be trusted, so each needed joint must be clearly
+// visible and inside the frame on its own; an average would let a clear
+// upper body hide guessed hips and feet.
+function jointUsable(point, minVisibility) {
+  return (
+    point !== undefined &&
+    (point.visibility ?? 0) >= minVisibility &&
+    point.x >= 0 &&
+    point.x <= 1 &&
+    point.y >= 0 &&
+    point.y <= 1
+  );
+}
+
 // Pick the side of the body facing the camera. Side-on exercises hide
 // the far arm and leg, so only the near side is used. Returns null when
-// that side isn't visible enough or doesn't look like a real body.
+// neither side is fully visible or the body doesn't look real.
 function pickSide(p, exercise, minVisibility) {
   const { joints } = exercise;
-  const left = sideVisibility(p, SIDES.left, joints);
-  const right = sideVisibility(p, SIDES.right, joints);
-  const best = left >= right ? 'left' : 'right';
-  const visibility = Math.max(left, right);
+  const order =
+    sideVisibility(p, SIDES.left, joints) >= sideVisibility(p, SIDES.right, joints)
+      ? ['left', 'right']
+      : ['right', 'left'];
 
-  if (visibility < minVisibility) return null;
-
-  const side = SIDES[best];
-  const allPresent = joints.every(name => p[side[name]]);
-  if (!allPresent) return null;
-  if (exercise.plausible && !exercise.plausible(p, side)) return null;
-  return { name: best, joints: side };
+  for (const name of order) {
+    const side = SIDES[name];
+    const usable = joints.every(joint => jointUsable(p[side[joint]], minVisibility));
+    if (usable && (!exercise.plausible || exercise.plausible(p, side))) {
+      return { name, joints: side };
+    }
+  }
+  return null;
 }
 
 export function createRepCounter(exerciseKey, options = {}) {
