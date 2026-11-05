@@ -180,7 +180,7 @@ export function createRepCounter(exerciseKey, options = {}) {
     reasons.push(...attempt.formIssues);
 
     if (reasons.length) {
-      const event = { type: 'rejected', reason: reasons[0], t };
+      const event = { type: 'rejected', reason: reasons[0], reasons, t };
       rejected.push(event);
       lastEvent = event;
     } else {
