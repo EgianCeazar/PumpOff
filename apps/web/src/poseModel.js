@@ -4,6 +4,17 @@ const WASM_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/w
 const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 
+// One model shared by screens that load it lazily (the battle screen),
+// so opening it twice doesn't load the model twice. Never closed.
+let shared = null;
+export function getSharedPoseLandmarker() {
+  shared ??= loadPoseLandmarker().catch(error => {
+    shared = null;
+    throw error;
+  });
+  return shared;
+}
+
 // Loads MediaPipe Pose Landmarker, trying the GPU first and falling
 // back to the CPU on devices where WebGL setup fails.
 export async function loadPoseLandmarker() {

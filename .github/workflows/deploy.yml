@@ -40,6 +40,12 @@ jobs:
         run: npm test
 
       - name: Build web app
+        # Public Supabase settings for online battles, stored as repository
+        # variables (Settings → Secrets and variables → Actions → Variables).
+        # Without them the site still works; battles fall back to test mode.
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Setup GitHub Pages

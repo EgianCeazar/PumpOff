@@ -52,7 +52,7 @@ function bestMessage(beaten) {
   return `New personal ${beaten.map(key => BEST_LABELS[key] ?? 'best').join(' and ')}.`;
 }
 
-export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
+export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout, releaseCamera = false }) {
   const [exercise, setExercise] = useState('pushup');
   const [modelState, setModelState] = useState('loading'); // loading | ready | failed
   const [cameraOn, setCameraOn] = useState(false);
@@ -215,6 +215,11 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
     },
     [stopCamera],
   );
+
+  // Another screen (Battle) needs the camera: phones only let one use it.
+  useEffect(() => {
+    if (releaseCamera) stopCamera();
+  }, [releaseCamera, stopCamera]);
 
   /* ---------------------------- counting ---------------------------- */
 
