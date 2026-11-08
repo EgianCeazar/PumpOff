@@ -17,4 +17,4 @@ Product facts live in [PRODUCT.md](PRODUCT.md). The visual system, once recorded
 - Anything saved per device (like the theme) goes in localStorage wrapped in try/catch.
 - Workout data is in localStorage under `pumpoff.log.v1`.
 - Run `npm test` and `npm run build` before opening a PR. Pushes to `main` deploy to GitHub Pages.
-- Work on a branch and open a PR; the owner approves each merge.
+- Work on a branch and commit locally, then stop. Never push, open a pull request or merge: the owner reviews each change in GitHub Desktop and decides whether to push.
