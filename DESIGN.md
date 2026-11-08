@@ -57,6 +57,17 @@ typography:
     fontWeight: 900
     lineHeight: 1
     letterSpacing: "-0.03em"
+  hud-count-focus:
+    fontFamily: "Gabarito Variable, Gabarito, sans-serif"
+    fontSize: "clamp(6rem, 34vw, 10rem)"
+    fontWeight: 900
+    lineHeight: 1
+    letterSpacing: "-0.03em"
+  countdown:
+    fontFamily: "Gabarito Variable, Gabarito, sans-serif"
+    fontSize: "clamp(8rem, 45vw, 15rem)"
+    fontWeight: 900
+    lineHeight: 1
   stat:
     fontFamily: "Gabarito Variable, Gabarito, sans-serif"
     fontSize: "clamp(2.2rem, 9vw, 3rem)"
@@ -254,7 +265,8 @@ A warm cream-to-espresso neutral ramp carries the page; a single action colour, 
 **Character:** Gabarito is round, heavy and friendly, built for numbers you read from across a room; Figtree is a clean, warm geometric text face that keeps coaching lines and labels plain. Both are free and self-hosted through Fontsource.
 
 ### Hierarchy
-- **HUD count** (900, clamp(5rem, 26vw, 8rem), 1, -0.03em): the live rep count in the camera card. The largest thing in the product.
+- **HUD count** (900, clamp(5rem, 26vw, 8rem), 1, -0.03em): the live rep count in the camera card. Grows to clamp(6rem, 34vw, 10rem) in focus mode (camera running).
+- **Countdown** (900, clamp(8rem, 45vw, 15rem), 1): the 3-2-1 before a timed set, white, centred over a 38% black scrim on the camera card. The largest thing in the product, shown for three seconds.
 - **Stat** (900, clamp(2.2rem, 9vw, 3rem), 1, -0.02em): streak, weekly total and clean-rate on Progress.
 - **Figure** (800, 2.4rem / 1.9rem, 1.05): set results and history totals; 2rem for the HUD timer, 1.45rem for personal bests.
 - **Headline** (800, clamp(1.9rem, 6vw, 2.4rem), 1.05, -0.02em): screen titles (h1), balanced wrapping.
@@ -278,6 +290,7 @@ Phone first at 375 px. Content sits in a single column with 16 px side padding, 
 
 - **Below 760 px:** a fixed bottom tab bar (68 px plus safe-area) holds Workout, History, Progress with icon over label. Exercise chips become one horizontally scrolling row bleeding to the screen edge; the camera card takes the remaining height (clamp(300px, 100dvh − 350px, 560px)) so the Save button stays above the tab bar.
 - **760 px and up:** tabs move into the sticky top bar as pill buttons; controls sit in a three-column grid with the primary spanning two; history becomes an auto-fill grid of 320 px cards; Progress becomes two columns.
+- **Focus mode (camera running, all widths):** the Workout title and exercise chips fold away behind a bar with the exercise name and a "Change exercise" link; on phones the camera card grows to clamp(320px, 100dvh − 296px, 680px), still keeping Save set above the tab bar.
 - **1040 px and up:** Workout splits into camera (1.7fr) and a sticky side column (min 300px); Progress puts chart and mistakes left, bests right.
 - Safe-area insets are respected top and bottom; the stage aspect ratio steps 4:5 → 4:3 → 16:10 with width.
 
@@ -290,7 +303,7 @@ Flat. Surfaces never cast shadows; depth is tonal (cream ground, white card, oat
 
 ## Shapes
 
-Soft and friendly. Three radii: 12 px for small options, 16 px for buttons, the appearance panel and the coach message, 22 px for panels and the camera card. Chips, tabs on desktop, tags, HUD pills, icon buttons, swatches and dots are full pills. Borders are always the same width token and the same warm line colour, so shape reads by radius, not by stroke weight.
+Soft and friendly. Three radii: 12 px for small options, 16 px for buttons, the appearance panel and the coach message, 22 px for panels and the camera card. Rep ticks are the one exception: 5 px bars with 2 px (counted, 16 px tall, ink) or 1 px (not counted, 8 px tall, dashed warn) corners, so the two read apart by shape, not colour. A set that holds a personal best gets an ink-filled pill tag with a Lucide trophy (the action colour stays reserved for buttons). Chips, tabs on desktop, tags, HUD pills, icon buttons, swatches and dots are full pills. Borders are always the same width token and the same warm line colour, so shape reads by radius, not by stroke weight.
 
 ## Components
 

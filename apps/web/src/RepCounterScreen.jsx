@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision';
-import { EXERCISES, createTracker, encodeFrame, makeSet, sessionSummary } from '@pumpoff/core';
+import { EXERCISES, createTracker, encodeFrame, makeSet, personalBests, sessionSummary } from '@pumpoff/core';
 import {
   Camera,
   CameraOff,
@@ -16,12 +16,15 @@ import {
   Square,
   SwitchCamera,
   Timer,
+  Trophy,
 } from 'lucide-react';
 import { loadPoseLandmarker } from './poseModel.js';
 import { describeMistakes, describeSet, formatDuration, formatHold, formatPercent } from './format.js';
 
 const SET_SECONDS = 60;
 const COUNTDOWN_SECONDS = 3;
+// Rep ticks under the count show this many of the most recent attempts.
+const MAX_TICKS = 30;
 // A plank shorter than this isn't worth logging.
 const MIN_HOLD_MS = 1000;
 
@@ -60,6 +63,10 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   const [snapshot, setSnapshot] = useState(() => blankSnapshot('pushup'));
   const [message, setMessage] = useState(null); // { text, tone: 'ok' | 'warn' | 'info' }
   const [error, setError] = useState('');
+  // One mark per rep attempt in this set, in order: 'ok' counted, 'no' not counted.
+  const [marks, setMarks] = useState([]);
+  // While the camera runs the exercise picker folds away; this opens it again.
+  const [showPicker, setShowPicker] = useState(false);
 
   // free: counting any time · countdown/active: timed set · done: set finished
   const [setPhase, setSetPhase] = useState('free');
@@ -153,8 +160,13 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
           setStartRef.current = Date.now() - 1500;
         }
         const event = snap.lastEvent;
-        if (event?.type === 'rep') setMessage({ text: `Rep ${event.reps}`, tone: 'ok' });
-        else if (event?.type === 'rejected') setMessage({ text: `Not counted: ${event.reason}`, tone: 'warn' });
+        if (event?.type === 'rep') {
+          setMessage({ text: `Rep ${event.reps}`, tone: 'ok' });
+          setMarks(prev => [...prev, 'ok']);
+        } else if (event?.type === 'rejected') {
+          setMessage({ text: `Not counted: ${event.reason}`, tone: 'warn' });
+          setMarks(prev => [...prev, 'no']);
+        }
         else if (event?.type === 'start') setMessage({ text: 'Holding. Keep it straight.', tone: 'ok' });
         else if (event?.type === 'resume') setMessage({ text: 'Back in position. Timer running.', tone: 'ok' });
         else if (event?.type === 'break') setMessage({ text: `Paused: ${event.reason}`, tone: 'warn' });
@@ -216,6 +228,34 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
     [stopCamera],
   );
 
+  // Keep the screen awake while the camera runs, so a propped-up phone
+  // doesn't dim or lock mid-set. Browsers drop the lock when the tab is
+  // hidden, so take it again when the page comes back.
+  useEffect(() => {
+    if (!cameraOn || !navigator.wakeLock) return undefined;
+    let lock = null;
+    let active = true;
+    const take = async () => {
+      try {
+        if (active && document.visibilityState === 'visible') lock = await navigator.wakeLock.request('screen');
+      } catch {
+        // Not allowed (battery saver, unsupported): the set still works, the screen may just dim.
+      }
+    };
+    take();
+    document.addEventListener('visibilitychange', take);
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', take);
+      lock?.release().catch(() => {});
+    };
+  }, [cameraOn]);
+
+  // The picker folds away again each time the camera starts.
+  useEffect(() => {
+    if (cameraOn) setShowPicker(false);
+  }, [cameraOn]);
+
   /* ---------------------------- counting ---------------------------- */
 
   const resetCounter = useCallback(
@@ -224,6 +264,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
       setStartRef.current = null;
       setSnapshot(blankSnapshot(key));
       setMessage(null);
+      setMarks([]);
     },
     [],
   );
@@ -273,6 +314,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   const chooseExercise = key => {
     if (setPhase === 'countdown' || setPhase === 'active') return;
     setExercise(key);
+    setShowPicker(false);
     setSetPhase('free');
     setSetResult(null);
     countingRef.current = true;
@@ -378,7 +420,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   const MessageIcon = message?.tone === 'warn' ? CircleX : message?.tone === 'ok' ? CircleCheck : Info;
 
   return (
-    <main className="app workout">
+    <main className={`app workout${cameraOn ? ' focus' : ''}`}>
       <header className="page-head">
         <h1>Workout</h1>
         <p className="sub">Prop up your phone, pick an exercise, and let the camera count your reps.</p>
@@ -386,7 +428,29 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
 
       <div className="workout-grid">
         <section className="workout-main" aria-label="Rep counter">
-          <div className="chips" role="group" aria-label="Exercise">
+          {cameraOn && (
+            <div className="focus-bar">
+              <strong>{info.name}</strong>
+              <button
+                type="button"
+                className="link"
+                aria-expanded={showPicker}
+                aria-controls="exercise-picker"
+                disabled={timedBusy}
+                onClick={() => setShowPicker(value => !value)}
+              >
+                {showPicker ? 'Done' : 'Change exercise'}
+                <ChevronDown className={`chev${showPicker ? ' open' : ''}`} aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          <div
+            id="exercise-picker"
+            className="chips"
+            role="group"
+            aria-label="Exercise"
+            hidden={cameraOn && !showPicker}
+          >
             {Object.values(EXERCISES).map(item => (
               <button
                 key={item.key}
@@ -410,7 +474,21 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
               <span>
                 {info.name.toLowerCase()} {hold ? 'held' : 'counted'}
               </span>
+              {!hold && marks.length > 0 && (
+                <span className="ticks" aria-label={`${marks.filter(m => m === 'ok').length} counted, ${marks.filter(m => m === 'no').length} not counted`}>
+                  {/* Keys are each attempt's position in the set, so only the newest tick animates in. */}
+                  {marks.slice(-MAX_TICKS).map((mark, i) => (
+                    <i key={Math.max(0, marks.length - MAX_TICKS) + i} className={mark} />
+                  ))}
+                </span>
+              )}
             </div>
+
+            {setPhase === 'countdown' && (
+              <div className="countdown" aria-live="assertive">
+                <span key={secondsLeft}>{secondsLeft > 0 ? secondsLeft : 'Go'}</span>
+              </div>
+            )}
 
             <div className="hud-side">
               {cameraOn && (
@@ -419,10 +497,10 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
                   {pill}
                 </div>
               )}
-              {timedBusy && (
-                <div className="hud-timer" aria-live="polite">
+              {setPhase === 'active' && (
+                <div className="hud-timer">
                   <Timer aria-hidden="true" />
-                  {setPhase === 'countdown' ? (secondsLeft > 0 ? secondsLeft : 'Go') : `${secondsLeft}s`}
+                  {secondsLeft}s
                 </div>
               )}
             </div>
@@ -515,7 +593,12 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
           {setPhase === 'done' && setResult && (
             <section className="panel result">
               <h2>Set complete</h2>
-              {setResult.beaten?.length > 0 && <p className="best">{bestMessage(setResult.beaten)}</p>}
+              {setResult.beaten?.length > 0 && (
+                <p className="best-tag">
+                  <Trophy aria-hidden="true" />
+                  {bestMessage(setResult.beaten)}
+                </p>
+              )}
               {setResult.saved && <p className="meta">Saved to your workout.</p>}
               <dl className="result-grid">
                 <div>
@@ -544,7 +627,7 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
           )}
 
           {log.current ? (
-            <CurrentWorkout session={log.current} onFinish={finishWorkout} busy={timedBusy} />
+            <CurrentWorkout log={log} session={log.current} onFinish={finishWorkout} busy={timedBusy} />
           ) : (
             <section className="panel quiet">
               <h2>Today's workout</h2>
@@ -588,8 +671,24 @@ export default function RepCounterScreen({ log, onSaveSet, onFinishWorkout }) {
   );
 }
 
-function CurrentWorkout({ session, onFinish, busy }) {
+// Which sets currently hold a personal best, as setId → labels.
+function recordHolders(log) {
+  const holders = new Map();
+  const add = (record, label) => {
+    if (!record?.setId) return;
+    holders.set(record.setId, [...(holders.get(record.setId) ?? []), label]);
+  };
+  for (const entry of Object.values(personalBests(log))) {
+    add(entry.anySet, 'Best set');
+    add(entry.timed?.[SET_SECONDS], `Best ${SET_SECONDS}s set`);
+    add(entry.longestHold, 'Longest hold');
+  }
+  return holders;
+}
+
+function CurrentWorkout({ log, session, onFinish, busy }) {
   const summary = sessionSummary(session);
+  const records = recordHolders(log);
   return (
     <section className="panel">
       <div className="panel-head">
@@ -601,7 +700,15 @@ function CurrentWorkout({ session, onFinish, busy }) {
       <ol className="set-list">
         {session.sets.map(set => (
           <li key={set.id}>
-            <span>{describeSet(set)}</span>
+            <span>
+              {describeSet(set)}
+              {records.has(set.id) && (
+                <span className="best-tag small">
+                  <Trophy aria-hidden="true" />
+                  {records.get(set.id).join(' · ')}
+                </span>
+              )}
+            </span>
             {set.notCounted > 0 && (
               <small>
                 {set.notCounted} not counted: {describeMistakes(set.notCountedReasons)}
