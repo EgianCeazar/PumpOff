@@ -77,6 +77,7 @@
 
 /* ---------------- base ---------------- */
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html {
   background: var(--bg);
@@ -249,7 +250,8 @@ legend { padding: 0; margin-bottom: 8px; font-weight: 700; }
 
 details > summary { cursor: pointer; font-weight: 650; color: var(--ink); min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 8px; list-style: none; }
 details > summary::-webkit-details-marker { display: none; }
-summary .chev { color: var(--ink-2); transition: transform 200ms var(--ease); }
+.chev { color: var(--ink-2); transition: transform 200ms var(--ease); }
+.chev.open { transform: rotate(180deg); }
 details[open] > summary .chev { transform: rotate(180deg); }
 details[open] > summary { margin-bottom: 8px; }
 
@@ -282,6 +284,24 @@ details[open] > summary { margin-bottom: 8px; }
 @keyframes count-in { from { transform: scale(0.88); opacity: 0.4; } }
 .hud-count span { font-size: 0.9rem; font-weight: 600; color: var(--ink-2); }
 
+/* One tick per attempt: tall solid = counted, short dashed = not counted (reads without colour). */
+.hud-count .ticks { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 3px; max-width: 168px; min-height: 16px; margin-top: 8px; }
+.ticks i { width: 5px; height: 16px; border-radius: 2px; background: var(--ink); transform-origin: bottom; animation: tick-in 200ms var(--ease); }
+.ticks i.no { height: 8px; border-radius: 1px; background: repeating-linear-gradient(to bottom, var(--warn) 0 2px, transparent 2px 4px); }
+@keyframes tick-in { from { transform: scaleY(0.2); opacity: 0; } }
+
+/* Timed sets: a big 3-2-1 in the middle of the camera view. */
+.countdown { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.38); pointer-events: none; }
+.countdown span { font-family: var(--font-display); font-weight: 900; font-size: clamp(8rem, 45vw, 15rem); line-height: 1; color: #ffffff; animation: countdown-in 500ms var(--ease); }
+@keyframes countdown-in { from { transform: scale(1.3); opacity: 0; } }
+
+/* Focus mode: while the camera runs, the title and exercise chips fold away. */
+.workout.focus .page-head { display: none; }
+.workout.focus .hud-count strong { font-size: clamp(6rem, 34vw, 10rem); }
+.focus-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.focus-bar strong { font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; }
+.focus-bar .link { gap: 6px; padding: 4px 0; color: var(--ink-2); }
+
 .hud-side { position: absolute; right: 12px; top: 12px; display: grid; justify-items: end; gap: 8px; max-width: 46%; }
 .hud-pill { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--hud-bg); color: var(--ink); border: var(--bw) solid var(--line); border-radius: 999px; font-size: 0.85rem; font-weight: 650; }
 .hud-pill .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--fill-strong); flex: none; transition: background-color 200ms var(--ease); }
@@ -306,7 +326,11 @@ details[open] > summary { margin-bottom: 8px; }
 .result-grid dt { color: var(--ink-2); font-size: 0.85rem; }
 .result-grid dd { margin: 0; font-family: var(--font-display); font-size: 2.4rem; font-weight: 800; line-height: 1.05; }
 .reasons { margin: 0; padding-left: 20px; color: var(--ink-2); display: grid; gap: 4px; }
-.best { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; }
+/* A set that beats a personal best gets an ink tag (the action colour stays for buttons). */
+.best-tag { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 6px 14px; border-radius: 999px; background: var(--ink); color: var(--bg); font-family: var(--font-display); font-size: 1rem; font-weight: 800; animation: message-in 220ms var(--ease); }
+.best-tag svg.lucide { width: 18px; height: 18px; }
+.set-list .best-tag.small { display: inline-flex; gap: 4px; margin-left: 8px; padding: 2px 9px; font-family: var(--font-text); font-size: 0.78rem; font-weight: 700; vertical-align: 1px; animation: none; }
+.best-tag.small svg.lucide { width: 14px; height: 14px; }
 
 .set-list { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 .set-list li::marker { color: var(--ink-2); }
@@ -377,6 +401,7 @@ details[open] > summary { margin-bottom: 8px; }
   /* Keep the main button above the tab bar: the camera card takes what is left of the screen. */
   .workout .page-head .sub { display: none; }
   .stage { aspect-ratio: auto; height: clamp(300px, calc(100dvh - 350px), 560px); max-height: none; }
+  .workout.focus .stage { height: clamp(320px, calc(100dvh - 296px), 680px); }
 }
 
 /* ---------------- small phones ---------------- */
